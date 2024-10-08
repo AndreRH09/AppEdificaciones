@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.appedificaciones.fragments.FavoritesFragment;
 import com.example.appedificaciones.fragments.HomeFragment;
 import com.example.appedificaciones.fragments.ListFragment;
 import com.example.appedificaciones.fragments.MapFragment;
@@ -25,6 +26,7 @@ public class HomeActivity extends AppCompatActivity {
     private HomeFragment homeFragment;
     private ListFragment listaFragment = null;
     private MapFragment mapaFragment = null;
+    private FavoritesFragment favoritesFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,18 +42,23 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.menu_home) {
-                    homeFragment = HomeFragment.newInstance("", "");
+                    homeFragment = new HomeFragment();
                     loadFragment(homeFragment);
                     return true;
                 } else if (menuItem.getItemId() == R.id.menu_lista) {
-                    listaFragment = ListFragment.newInstance("", "");
+                    listaFragment = new ListFragment();
                     loadFragment(listaFragment);
                     return true;
                 } else if (menuItem.getItemId() == R.id.menu_mapa) {
-                    mapaFragment = MapFragment.newInstance("", "");
+                    mapaFragment = new MapFragment();
                     loadFragment(mapaFragment);
                     return true;
-                } else {
+                }else if(menuItem.getItemId() == R.id.menu_favorites){
+                    favoritesFragment = new FavoritesFragment();
+                    loadFragment(favoritesFragment);
+                    return true;
+                }
+                else {
                     return false;
                 }
             }

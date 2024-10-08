@@ -3,5 +3,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#009688"
-    tools:context=".fragments.HomeFragment" />
+    android:background="@color/secondary"
+    tools:context=".fragments.HomeFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@color/background">
+
+    <!-- Título de la sección -->
+
+        <!-- Descripción -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="Edificaciones Históricas de Arequipa"
+            android:textColor="@color/textPrimary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Arequipa, conocida como la Ciudad Blanca, posee una gran variedad de edificaciones históricas. Muchas de ellas, como iglesias y casonas, son poco conocidas por los turistas. Este aplicativo busca cambiar eso al ofrecer una experiencia interactiva para descubrir estos lugares llenos de historia"
+            android:textSize="18sp" />
+
+    <!-- Imagen representativa de edificaciones históricas -->
+
+        <!-- Botón para ver la lista de edificaciones -->
+        <ImageView
+            android:id="@+id/imgEdificios"
+            android:layout_width="221dp"
+            android:layout_height="200dp"
+
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/the_cloisters" />
+
+        <Button
+            android:id="@+id/btnVerEdificaciones"
+            android:layout_width="221dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/principal"
+            android:text="Ver Edificaciones"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+</FrameLayout>
