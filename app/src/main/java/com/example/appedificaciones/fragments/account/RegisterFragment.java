@@ -1,26 +1,35 @@
-package com.example.appedificaciones;
+package com.example.appedificaciones.fragments.account;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
 import androidx.fragment.app.Fragment;
-import java.io.FileOutputStream;
+
+import com.example.appedificaciones.AccountEntity;
+import com.example.appedificaciones.R;
+import com.google.gson.Gson;
+
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.File;
 
 public class RegisterFragment extends Fragment {
 
     private EditText edtUser, edtPassword, edtEmail, edtPhone;
     private Button btnRegister, btnCancelar;
 
-    @Nullable
+    public static final String ACCOUNTS_FILE_NAME= "accounts.txt";
+    private File accountsFile;
+
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Infla el layout para este fragmento
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
@@ -32,6 +41,8 @@ public class RegisterFragment extends Fragment {
         btnRegister = view.findViewById(R.id.btnRegister);
         btnCancelar = view.findViewById(R.id.btnCancelar);
 
+        accountsFile = new File(getActivity().getFilesDir(), ACCOUNTS_FILE_NAME);
+
         // Acción del botón de registrar
         btnRegister.setOnClickListener(v -> {
             String username = edtUser.getText().toString();
@@ -39,24 +50,32 @@ public class RegisterFragment extends Fragment {
             String email = edtEmail.getText().toString();
             String phone = edtPhone.getText().toString();
 
-            // Validar los campos
             if (username.isEmpty() || password.isEmpty() || email.isEmpty() || phone.isEmpty()) {
                 Toast.makeText(getContext(), "Por favor completa todos los campos.", Toast.LENGTH_SHORT).show();
             } else {
-                // Guardar la información en un archivo de texto
-                String userInfo = username + "," + password + "," + email + "," + phone + "\n";
-                saveToFile(userInfo);
-                Toast.makeText(getContext(), "Registro exitoso.", Toast.LENGTH_SHORT).show();
-                // Aquí puedes navegar de vuelta al LoginFragment
+                AccountEntity accountEntity = new AccountEntity();
+                accountEntity.setEmail(edtEmail.getText().toString());
+                accountEntity.setPhone(edtPhone.getText().toString());
+                accountEntity.setUsername(edtUser.getText().toString());
+                accountEntity.setPassword(edtPassword.getText().toString());
+
+                Gson gson = new Gson();
+                String accountJson = gson.toJson(accountEntity);
+                saveAccountToFile(accountJson);
+
+                Toast.makeText(getActivity().getApplicationContext(), "Usuario registrado: " + username, Toast.LENGTH_LONG).show();
+                Log.d("LoginActivity", "Usuario registrado:" + username);
+
+                // Regresar al LoginFragment
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new LoginFragment())
                         .commit();
             }
         });
 
-        // Acción del botón de cancelar
+        //Boton cancelar
         btnCancelar.setOnClickListener(v -> {
-            // Aquí puedes navegar de vuelta al LoginFragment
+            // Regresar al LoginFragment
             getActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new LoginFragment())
                     .commit();
@@ -65,16 +84,13 @@ public class RegisterFragment extends Fragment {
         return view;
     }
 
-    private void saveToFile(String data) {
-        FileOutputStream fos;
+     private void saveAccountToFile(String accountJson) {
         try {
-            // Cambia "usuarios.txt" a donde desees guardar el archivo
-            fos = getContext().openFileOutput("usuarios.txt", getContext().MODE_PRIVATE | getContext().MODE_APPEND);
-            fos.write(data.getBytes());
-            fos.close();
+            FileWriter writer = new FileWriter(accountsFile, true);
+            writer.write(accountJson + "\n");
+            writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Error al guardar la información.", Toast.LENGTH_SHORT).show();
+            throw new RuntimeException(e);
         }
     }
 }

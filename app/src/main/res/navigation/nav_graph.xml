@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.appedificaciones.LoginFragment"
+        android:name="com.example.appedificaciones.fragments.account.LoginFragment"
         android:label="Login Fragment"
         tools:layout="@layout/fragment_login">
         <action
@@ -23,7 +23,7 @@
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.example.appedificaciones.RegisterFragment"
+        android:name="com.example.appedificaciones.fragments.account.RegisterFragment"
         android:label="Register Fragment"
         tools:layout="@layout/fragment_register" />
 </navigation>
