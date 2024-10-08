@@ -33,7 +33,7 @@ public class LoginFragment extends Fragment {
     private EditText edtUsuario, edtPassword;
     private Button btnLogin, btnGoToRegister;
     private String accountEntityString;
-
+    public static final String USER_LOGGED = "userAccount";
 
 
     @Override
@@ -55,6 +55,7 @@ public class LoginFragment extends Fragment {
             if (checkCredentials(usuario, password)) {
                 Toast.makeText(getActivity(), "Login exitoso", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getActivity(), HomeActivity.class);
+                intent.putExtra(USER_LOGGED, accountEntityString);
                 startActivity(intent);
 
             } else {
@@ -85,8 +86,10 @@ public class LoginFragment extends Fragment {
            Gson gson = new Gson();
            while ((line = reader.readLine()) != null) {
                AccountEntity account = gson.fromJson(line, AccountEntity.class);
+
                if (account.getUsername().equals(username) && account.getPassword().equals(password)) {
                    accountEntityString = line;
+
                    return true;
                }
            }

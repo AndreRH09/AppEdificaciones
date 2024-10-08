@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="Edificaciones Históricas de Arequipa"
+            android:text="Bievenido"
             android:textColor="@color/textPrimary"
             android:textSize="24sp"
             android:textStyle="bold" />
