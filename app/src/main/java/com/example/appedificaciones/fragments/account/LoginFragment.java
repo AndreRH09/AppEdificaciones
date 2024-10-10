@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.appedificaciones.AccountEntity;
@@ -30,6 +31,7 @@ public class LoginFragment extends Fragment {
     private FragmentTransaction fragmentTransaction = null;
     private RegisterFragment registerFragment;
 
+    private TextView txtForgotPassword; // Enlace para la recuperación
     private EditText edtUsuario, edtPassword;
     private Button btnLogin, btnGoToRegister;
     private String accountEntityString;
@@ -46,6 +48,8 @@ public class LoginFragment extends Fragment {
         edtPassword = view.findViewById(R.id.edtPassword);
         btnLogin = view.findViewById(R.id.btnLogin);
         btnGoToRegister = view.findViewById(R.id.btnRegister);
+        txtForgotPassword = view.findViewById(R.id.txtOlvidarContra); // Asegúrate de tener este TextView en tu layout
+
 
         // Acción para el botón de Login
         btnLogin.setOnClickListener(v -> {
@@ -70,6 +74,14 @@ public class LoginFragment extends Fragment {
             registerFragment = new RegisterFragment();
             loadFragment(registerFragment);
         });
+
+        // Acción para el enlace de recuperación
+        txtForgotPassword.setOnClickListener(v -> {
+            fragmentManager = getParentFragmentManager();
+            RecuperarFragment recuperarFragment = new RecuperarFragment();
+            loadFragment(recuperarFragment);
+        });
+
 
         return view;
     }
