@@ -1,0 +1,88 @@
+{
+  "edificaciones": [
+    {
+      "titulo": "Monasterio de Santa Catalina",
+      "categoria": "Religioso",
+      "resumen": "Convento histórico en Arequipa",
+      "descripcion": "El Monasterio de Santa Catalina es un convento histórico que data de 1579, famoso por su arquitectura colonial y sus hermosos patios de colores.",
+      "imagen": "santa_catalina.jpg"
+    },
+    {
+      "titulo": "Catedral de Arequipa",
+      "categoria": "Religioso",
+      "resumen": "Catedral en la Plaza de Armas",
+      "descripcion": "La Catedral de Arequipa es una de las principales iglesias de la ciudad, situada en la Plaza de Armas y destacada por su imponente fachada de sillar.",
+      "imagen": "catedral.jpg"
+    },
+    {
+      "titulo": "Casa del Moral",
+      "categoria": "Residencial",
+      "resumen": "Antigua casa colonial",
+      "descripcion": "Una de las casas coloniales más antiguas de Arequipa, famosa por su arquitectura y su colección de arte virreinal.",
+      "imagen": "casa_del_moral.jpg"
+    },
+    {
+      "titulo": "Iglesia de la Compañía",
+      "categoria": "Religioso",
+      "resumen": "Iglesia con tallados en sillar",
+      "descripcion": "Conocida por sus impresionantes tallados en piedra de sillar, la Iglesia de la Compañía es una joya de la arquitectura barroca.",
+      "imagen": "compania.jpg"
+    },
+    {
+      "titulo": "Casa Tristán del Pozo",
+      "categoria": "Residencial",
+      "resumen": "Ejemplo de arquitectura colonial",
+      "descripcion": "La Casa Tristán del Pozo es un ejemplo destacado de la arquitectura colonial arequipeña, con amplios patios y hermosos arcos.",
+      "imagen": "tristan_del_pozo.jpg"
+    },
+    {
+      "titulo": "Monasterio de la Recoleta",
+      "categoria": "Religioso",
+      "resumen": "Convento con biblioteca histórica",
+      "descripcion": "El Monasterio de la Recoleta alberga una amplia biblioteca histórica y es un lugar de tranquilidad y belleza arquitectónica.",
+      "imagen": "recoleta.jpg"
+    },
+    {
+      "titulo": "Basílica de Yanahuara",
+      "categoria": "Religioso",
+      "resumen": "Iglesia con vista a la ciudad",
+      "descripcion": "La Basílica de Yanahuara es una iglesia tradicional ubicada en un mirador que ofrece una vista panorámica de Arequipa.",
+      "imagen": "yanahuara.jpg"
+    },
+    {
+      "titulo": "Casa Goyeneche",
+      "categoria": "Residencial",
+      "resumen": "Casa señorial del siglo XVIII",
+      "descripcion": "Construida en el siglo XVIII, la Casa Goyeneche es una mansión señorial que refleja el estilo de vida de la élite colonial.",
+      "imagen": "casa_goyeneche.jpg"
+    },
+    {
+      "titulo": "Monasterio de San Francisco",
+      "categoria": "Religioso",
+      "resumen": "Antiguo monasterio colonial",
+      "descripcion": "El Monasterio de San Francisco es un antiguo convento con arquitectura colonial y un importante patrimonio histórico.",
+      "imagen": "san_francisco.jpg"
+    },
+    {
+      "titulo": "Casa Arróspide",
+      "categoria": "Residencial",
+      "resumen": "Mansión de estilo colonial",
+      "descripcion": "La Casa Arróspide es una mansión histórica que representa el estilo colonial de la ciudad.",
+      "imagen": "arrospide.jpg"
+    },
+    {
+      "titulo": "Molino de Sabandía",
+      "categoria": "Industrial",
+      "resumen": "Antiguo molino colonial",
+      "descripcion": "El Molino de Sabandía es un antiguo molino colonial que sigue en funcionamiento y es un atractivo turístico de la región.",
+      "imagen": "sabandia.jpg"
+    },
+    {
+      "titulo": "Teatro Municipal de Arequipa",
+      "categoria": "Cultural",
+      "resumen": "Espacio para eventos culturales",
+      "descripcion": "El Teatro Municipal de Arequipa es un lugar destacado para eventos culturales y presentaciones teatrales en la ciudad.",
+      "imagen": "teatro_municipal.jpg"
+    }
+  ]
+}

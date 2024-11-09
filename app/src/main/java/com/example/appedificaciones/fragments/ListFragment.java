@@ -1,91 +1,150 @@
 package com.example.appedificaciones.fragments;
 
 import android.os.Bundle;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.text.Editable;
 import android.widget.SearchView;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appedificaciones.Edificacion;
+import com.example.appedificaciones.EdificacionAdapter;
 import com.example.appedificaciones.R;
-import com.example.appedificaciones.EdificioAdapter;
-import com.example.appedificaciones.Edificio;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListFragment extends Fragment {
-
-    private List<Edificio> listaEdificios;
-    private EdificioAdapter edificioAdapter;
-
-    public ListFragment() {
-        // Required empty public constructor
-    }
+    private RecyclerView recyclerView;
+    private EdificacionAdapter adapter;
+    private EditText searchInput;
+    private Spinner spinnerCategory;
+    private List<Edificacion> edificaciones;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Inicializa la lista de edificios
-        listaEdificios = new ArrayList<>();
-        cargarEdificios();
+
     }
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_list, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-        SearchView searchView = view.findViewById(R.id.search_view);
 
-        // Configura el RecyclerView
-        edificioAdapter = new EdificioAdapter(listaEdificios, getContext());
-        recyclerView.setAdapter(edificioAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView = view.findViewById(R.id.recyclerView);
+        searchInput = view.findViewById(R.id.searchInput);
+        spinnerCategory = view.findViewById(R.id.spinnerCategory);
 
-        // Implementa la búsqueda
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        edificaciones = cargarEdificacionesDesdeArchivo();
+        Log.d("ListFragment", edificaciones.toString());
+        adapter = new EdificacionAdapter(edificaciones);
+        recyclerView.setAdapter(adapter);
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                filter(newText);
-                return true;
-            }
+        configurarSpinnerCategorias();
+        configurarSearchInput();
+
+        // Configura el click listener para navegar al DetailFragment
+        adapter.setOnItemClickListener(edificacion -> {
+            // Crear una instancia de DetailFragment
+            Log.d("LISTFRAGMENT", edificacion.getImagen());
+            EdificacionDetailFragment detailFragment = EdificacionDetailFragment.newInstance(edificacion);
+
+            // Reemplazar el fragment actual con el DetailFragment
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, detailFragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
         return view;
     }
 
-    private void cargarEdificios() {
-        // Agrega tus edificaciones aquí
-        listaEdificios.add(new Edificio("Edificio 1", R.drawable.edificio1));
-        listaEdificios.add(new Edificio("Edificio 2", R.drawable.edificio2));
-        listaEdificios.add(new Edificio("Edificio 3", R.drawable.edificio3));
-        listaEdificios.add(new Edificio("Edificio 4", R.drawable.edificio4));
-        listaEdificios.add(new Edificio("Edificio 5", R.drawable.edificio5));
-        listaEdificios.add(new Edificio("Edificio 6", R.drawable.edificio6));
-        listaEdificios.add(new Edificio("Edificio 7", R.drawable.edificio7));
-        listaEdificios.add(new Edificio("Edificio 8", R.drawable.edificio8));
-        listaEdificios.add(new Edificio("Edificio 9", R.drawable.edificio9));
-        listaEdificios.add(new Edificio("Edificio 10", R.drawable.edificio10));
+    private void configurarSpinnerCategorias() {
+        List<String> categorias = Edificacion.getCategoriesInList(edificaciones);
+        categorias.add(0, "Todas");
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categorias);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(spinnerAdapter);
+
+        spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                aplicarFiltro();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
-    private void filter(String text) {
-        List<Edificio> filteredList = new ArrayList<>();
-        for (Edificio item : listaEdificios) {
-            if (item.getTitulo().toLowerCase().contains(text.toLowerCase())) {
-                filteredList.add(item);
+    private void configurarSearchInput() {
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                aplicarFiltro();
             }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+    }
+
+    private void aplicarFiltro() {
+        String textoBusqueda = searchInput.getText().toString();
+        String categoriaSeleccionada = spinnerCategory.getSelectedItem().toString();
+        adapter.filtrar(textoBusqueda, categoriaSeleccionada);
+    }
+
+    private List<Edificacion> cargarEdificacionesDesdeArchivo() {
+        List<Edificacion> edificaciones = new ArrayList<>();
+        try {
+            InputStream inputStream = getContext().getAssets().open("edificaciones.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder jsonBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonBuilder.append(line);
+            }
+            JSONObject jsonObject = new JSONObject(jsonBuilder.toString());
+            JSONArray jsonArray = jsonObject.getJSONArray("edificaciones");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject obj = jsonArray.getJSONObject(i);
+                edificaciones.add(new Edificacion(
+                        getContext(),
+                        obj.getString("titulo"),
+                        obj.getString("categoria"),
+                        obj.getString("resumen"),
+                        obj.getString("descripcion"),
+                        obj.getString("imagen")
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        edificioAdapter.setListaEdificios(filteredList); // Actualiza la lista usando el método
+        return edificaciones;
     }
 }
