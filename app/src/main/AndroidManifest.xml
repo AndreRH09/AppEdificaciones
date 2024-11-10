@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppEdificaciones"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCCPQVcnSiMQddL9_hlv5VV_ZTl7qkSQk8"
+            />
+
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
