@@ -49,6 +49,13 @@
             android:text="descripcion"
             android:textColor="@android:color/black"
             android:textSize="14sp" />
+        <fragment
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_gravity="bottom" />
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
 </FrameLayout>

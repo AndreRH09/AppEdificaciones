@@ -18,6 +18,7 @@ public class Edificacion {
     private String imagen;
     private Context context;
 
+
     public Edificacion(Context context, String titulo, String categoria, String resumen,String descripcion, String imagen) {
         this.context = context;
         this.titulo = titulo;
