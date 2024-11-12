@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -52,6 +53,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private GoogleMap mMap;
     private LatLng coordenadasEdificacion;
     private FusedLocationProviderClient fusedLocationClient;
+    private Button btnVerCroquis; // Declara el botón
+
 
     public static EdificacionDetailFragment newInstance(Edificacion edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
@@ -74,6 +77,27 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         TextView descripcion = view.findViewById(R.id.textDescripcion);
         ImageView imagen = view.findViewById(R.id.imageView);
 
+        // Encuentra el botón y configura el listener
+        btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
+        btnVerCroquis.setOnClickListener(v -> {
+            CroquisFragment nuevoFragment = new CroquisFragment();
+
+            // Obtener el título de la edificación desde los argumentos
+            String tituloEdificacion = getArguments().getString(ARG_TITULO);
+
+            // Crear un bundle para pasar el título al fragmento de Croquis
+            Bundle args = new Bundle();
+            args.putString("tituloEdificacion", tituloEdificacion);
+            nuevoFragment.setArguments(args);
+
+            // Reemplazar el fragmento actual con el nuevo fragmento de croquis
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView, nuevoFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+
         if (getArguments() != null) {
             titulo.setText(getArguments().getString(ARG_TITULO));
             categoria.setText(getArguments().getString(ARG_CATEGORIA));
@@ -95,6 +119,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
 
         return view;
     }
+
+
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
