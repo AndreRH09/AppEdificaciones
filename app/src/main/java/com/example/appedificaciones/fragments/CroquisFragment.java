@@ -39,8 +39,7 @@ public class CroquisFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_croquis, container, false);
-        image = view.findViewById(R.id.imageCanvas);
-
+        image = view.findViewById(R.id.roomImageView);
 
         // Obtener el título de la edificación del argumento
         String tituloEdificacion = getArguments() != null ? getArguments().getString("tituloEdificacion") : "";
@@ -48,13 +47,10 @@ public class CroquisFragment extends Fragment {
         // Cargar datos de habitaciones desde assets
         loadRoomData(tituloEdificacion);
 
-
-        // Draw on Canvas after the layout is ready
-        view.post(new Runnable() {
-            @Override
-            public void run() {
-                drawMap();
-            }
+        // Usamos onGlobalLayout para redibujar la imagen cuando las dimensiones del ImageView cambien (por ejemplo, en la rotación)
+        image.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            // Después de que el layout se haya completado, redibujamos el mapa
+            drawMap();
         });
 
         // Set a touch listener to detect clicks
@@ -62,8 +58,13 @@ public class CroquisFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    float touchX = event.getX();
-                    float touchY = event.getY();
+                    // Ajustar las coordenadas del toque por el padding del ImageView
+                    int paddingStart = image.getPaddingStart();
+                    int paddingTop = image.getPaddingTop();
+
+                    // Ajustar las coordenadas según el padding
+                    float touchX = event.getX() - paddingStart;
+                    float touchY = event.getY() - paddingTop;
 
                     // Check if the touch coordinates are within any room
                     checkRoomClick(touchX, touchY);
@@ -77,18 +78,50 @@ public class CroquisFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Limpiar los datos antiguos al volver a este fragmento
+        clearData();
+
+        // Obtener el título de la edificación del argumento
+        String tituloEdificacion = getArguments() != null ? getArguments().getString("tituloEdificacion") : "";
+
+        // Cargar datos de habitaciones desde assets
+        loadRoomData(tituloEdificacion);
+
+        // Redibujar el mapa
+        getView().post(this::drawMap);
+    }
+
+    private void clearData() {
+        roomVertices.clear();
+        roomNames.clear();
+    }
+
     // Check if the touch event is within the boundaries of any room
     private void checkRoomClick(float touchX, float touchY) {
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             int roomId = entry.getKey();
             List<float[]> vertices = entry.getValue();
 
-            // Simple polygon point-in-polygon test (ray-casting algorithm)
             if (isPointInPolygon(touchX, touchY, vertices)) {
                 String roomName = roomNames.get(roomId);
                 if (roomName != null) {
-                    // Log the name of the room that was clicked
-                    Log.d("CroquisFragment", "Room clicked: " + roomName);
+                    // Crear un Bundle para pasar los datos de la sala a RoomFragment
+                    Bundle args = new Bundle();
+                    args.putSerializable("roomVertices", new ArrayList<>(vertices)); // Convertir a ArrayList para serialización
+                    args.putString("roomName", roomName);
+
+                    // Crear una instancia de RoomFragment y asignarle los argumentos
+                    RoomFragment roomFragment = new RoomFragment();
+                    roomFragment.setArguments(args);
+
+                    // Navegar a RoomFragment
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragmentContainerView, roomFragment) // Asegúrate de que este ID sea el correcto
+                            .addToBackStack(null)
+                            .commit();
                 }
                 return;
             }
@@ -176,42 +209,72 @@ public class CroquisFragment extends Fragment {
     }
 
     private void drawMap() {
-        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+        // Obtener las dimensiones del ImageView
+        int imageViewWidth = image.getWidth();
+        int imageViewHeight = image.getHeight();
+
+        // Crear un Bitmap con las dimensiones del ImageView
+        Bitmap bitmap = Bitmap.createBitmap(imageViewWidth, imageViewHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint();
         paint.setAntiAlias(true);
 
-        // Background color
-        canvas.drawColor(Color.parseColor("#FFF5E1")); // Cream background
+        // Color de fondo
+        canvas.drawColor(Color.parseColor("#FFF5E1")); // Fondo color crema
 
-        // Draw each room
+        // Determinar el rango máximo de las coordenadas (suponiendo que las coordenadas de las habitaciones están entre 0 y 1000)
+        float maxX = 0;
+        float maxY = 0;
+
+        // Encuentra el valor máximo de X y Y para normalizar
+        for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
+            List<float[]> vertices = entry.getValue();
+            for (float[] vertex : vertices) {
+                maxX = Math.max(maxX, vertex[0]);
+                maxY = Math.max(maxY, vertex[1]);
+            }
+        }
+
+        // Dibujar cada habitación
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             int roomId = entry.getKey();
             List<float[]> vertices = entry.getValue();
 
-            // Set color for each room (use different shades)
+            // Establecer color y estilo para cada habitación
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(6);
             paint.setColor(Color.BLACK);
 
-            // Draw room boundaries
+            // Dibujar los límites de la habitación (ajustar escala de las coordenadas)
             for (int i = 0; i < vertices.size(); i++) {
                 float[] start = vertices.get(i);
                 float[] end = vertices.get((i + 1) % vertices.size());
-                canvas.drawLine(start[0] * 100, start[1] * 100, end[0] * 100, end[1] * 100, paint); // Scale coordinates
+
+                // Normalizar las coordenadas y escalar al tamaño del ImageView
+                float startX = (start[0] / maxX) * imageViewWidth; // Normalizar y multiplicar por el ancho del ImageView
+                float startY = (start[1] / maxY) * imageViewHeight; // Normalizar y multiplicar por la altura del ImageView
+                float endX = (end[0] / maxX) * imageViewWidth;
+                float endY = (end[1] / maxY) * imageViewHeight;
+
+                canvas.drawLine(startX, startY, endX, endY, paint); // Dibujar la línea escalada
             }
 
-            // Draw room name
+            // Dibujar el nombre de la habitación
             paint.setStyle(Paint.Style.FILL);
             paint.setTextSize(30);
             String roomName = roomNames.get(roomId);
             if (roomName != null && !vertices.isEmpty()) {
                 float[] labelPos = vertices.get(0);
-                canvas.drawText(roomName, labelPos[0] * 100, labelPos[1] * 100 - 20, paint);
+                // Normalizar la posición del texto
+                float labelX = (labelPos[0] / maxX) * imageViewWidth;
+                float labelY = (labelPos[1] / maxY) * imageViewHeight;
+
+                // Dibujar el nombre de la habitación en la posición escalada
+                canvas.drawText(roomName, labelX, labelY - 20, paint); // Dibujar el nombre
             }
         }
 
-        // Set the Bitmap on the ImageView
+        // Establecer el Bitmap en el ImageView
         image.setImageBitmap(bitmap);
     }
 }
