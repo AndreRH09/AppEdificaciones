@@ -24,6 +24,7 @@ public class RoomFragment extends Fragment {
 
     private ImageView roomImageView;
     private List<float[]> roomVertices = new ArrayList<>();
+    private List<float[]> doorSegments = new ArrayList<>();
     private String roomName;
 
     @Override
@@ -31,14 +32,15 @@ public class RoomFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_room, container, false);
         roomImageView = view.findViewById(R.id.roomImageView);
 
-        // Obtener datos del cuarto
+        // Obtener los datos del Bundle
         Bundle args = getArguments();
         if (args != null) {
             roomVertices = (List<float[]>) args.getSerializable("roomVertices");
             roomName = args.getString("roomName", "");
+            doorSegments = (List<float[]>) args.getSerializable("doorSegments"); // Obtener las puertas
         }
 
-        // Dibujar el cuarto
+        // Dibujar la habitación con las puertas
         view.post(this::drawRoom);
         return view;
     }
@@ -46,9 +48,8 @@ public class RoomFragment extends Fragment {
     private void drawRoom() {
         if (roomVertices.isEmpty()) return;
 
-        // 1. Calcular los límites del bounding box (mínimo y máximo de las coordenadas)
+        // Calcular los límites del bounding box
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
-
         for (float[] vertex : roomVertices) {
             minX = Math.min(minX, vertex[0]);
             minY = Math.min(minY, vertex[1]);
@@ -56,24 +57,24 @@ public class RoomFragment extends Fragment {
             maxY = Math.max(maxY, vertex[1]);
         }
 
-        // 2. Calcular el tamaño de la habitación (ancho y alto del bounding box)
+        // Calcular el tamaño de la habitación
         float width = maxX - minX;
         float height = maxY - minY;
 
-        // 3. Obtener el tamaño del ImageView
+        // Obtener el tamaño del ImageView
         int imageViewWidth = roomImageView.getWidth();
         int imageViewHeight = roomImageView.getHeight();
 
-        // 4. Calcular el factor de escala (escala para que el bounding box quepa dentro del ImageView)
+        // Calcular la escala para que la habitación se ajuste al ImageView
         float scaleX = imageViewWidth / width;
         float scaleY = imageViewHeight / height;
-        float scale = Math.min(scaleX, scaleY); // Mantener la proporción original
+        float scale = Math.min(scaleX, scaleY);
 
-        // 5. Calcular el desplazamiento para centrar el dibujo dentro del ImageView
+        // Calcular el desplazamiento para centrar el dibujo
         float offsetX = (imageViewWidth - width * scale) / 2;
         float offsetY = (imageViewHeight - height * scale) / 2;
 
-        // 6. Crear el bitmap y canvas
+        // Crear el bitmap y canvas
         Bitmap bitmap = Bitmap.createBitmap(imageViewWidth, imageViewHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint();
@@ -82,7 +83,7 @@ public class RoomFragment extends Fragment {
         // Fondo
         canvas.drawColor(Color.parseColor("#FFF5E1"));
 
-        // Dibujar los límites del cuarto escalados
+        // Dibujar los límites del cuarto
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(6);
@@ -91,7 +92,6 @@ public class RoomFragment extends Fragment {
             float[] start = roomVertices.get(i);
             float[] end = roomVertices.get((i + 1) % roomVertices.size());
 
-            // Escalar las coordenadas
             float startX = (start[0] - minX) * scale + offsetX;
             float startY = (start[1] - minY) * scale + offsetY;
             float endX = (end[0] - minX) * scale + offsetX;
@@ -100,7 +100,8 @@ public class RoomFragment extends Fragment {
             canvas.drawLine(startX, startY, endX, endY, paint);
         }
 
-        // Dibujar el nombre del cuarto en el centro
+
+        // Dibujar el nombre de la habitación
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(60);
         if (roomName != null) {
@@ -111,6 +112,21 @@ public class RoomFragment extends Fragment {
             canvas.drawText(roomName, x, y, paint);
         }
 
+        // Dibujar las puertas (en color naranja, por ejemplo)
+        paint.setColor(Color.parseColor("#FFA500")); // Naranja
+        paint.setStrokeWidth(10);
+
+        for (float[] door : doorSegments) {
+            float startX = (door[0] - minX) * scale + offsetX;
+            float startY = (door[1] - minY) * scale + offsetY;
+            float endX = (door[2] - minX) * scale + offsetX;
+            float endY = (door[3] - minY) * scale + offsetY;
+
+            canvas.drawLine(startX, startY, endX, endY, paint);
+        }
+
+
+        // Establecer el bitmap en el ImageView
         roomImageView.setImageBitmap(bitmap);
     }
 }

@@ -31,6 +31,7 @@ public class CroquisFragment extends Fragment {
     private ImageView image;
     private Map<Integer, List<float[]>> roomVertices = new HashMap<>();
     private Map<Integer, String> roomNames = new HashMap<>();
+    private List<float[]> doorSegments = new ArrayList<>();
 
     public CroquisFragment() {
         // Required empty public constructor
@@ -100,27 +101,31 @@ public class CroquisFragment extends Fragment {
     }
 
     // Check if the touch event is within the boundaries of any room
+    // Método para manejar el toque en el mapa
     private void checkRoomClick(float touchX, float touchY) {
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             int roomId = entry.getKey();
             List<float[]> vertices = entry.getValue();
 
+            // Verificar si el toque está dentro del polígono de la habitación
             if (isPointInPolygon(touchX, touchY, vertices)) {
                 String roomName = roomNames.get(roomId);
+
                 if (roomName != null) {
-                    // Crear un Bundle para pasar los datos de la sala a RoomFragment
+                    // Crear un Bundle para pasar los datos de la habitación
                     Bundle args = new Bundle();
-                    args.putSerializable("roomVertices", new ArrayList<>(vertices)); // Convertir a ArrayList para serialización
-                    args.putString("roomName", roomName);
+                    args.putSerializable("roomVertices", new ArrayList<>(vertices)); // Pasar los vértices
+                    args.putString("roomName", roomName); // Pasar el nombre de la habitación
+                    args.putSerializable("doorSegments", new ArrayList<>(doorSegments)); // Pasar las puertas
 
-                    // Crear una instancia de RoomFragment y asignarle los argumentos
+                    // Crear una instancia de RoomFragment y pasar los datos
                     RoomFragment roomFragment = new RoomFragment();
-                    roomFragment.setArguments(args);
+                    roomFragment.setArguments(args); // Asignar los datos al fragmento
 
-                    // Navegar a RoomFragment
+                    // Navegar al fragmento de la habitación
                     getParentFragmentManager().beginTransaction()
-                            .replace(R.id.fragmentContainerView, roomFragment) // Asegúrate de que este ID sea el correcto
-                            .addToBackStack(null)
+                            .replace(R.id.fragmentContainerView, roomFragment) // Reemplazar el fragmento
+                            .addToBackStack(null) // Agregar a la pila de retroceso
                             .commit();
                 }
                 return;
@@ -184,7 +189,42 @@ public class CroquisFragment extends Fragment {
         } catch (IOException e) {
             Log.e("CroquisFragment", "Error al listar archivos en la carpeta: " + carpetaEdificacion, e);
         }
+
+        // Cargar archivos de puertas (door00X.txt)
+        try {
+            String[] files = context.getAssets().list(carpetaEdificacion);
+            if (files != null) {
+                for (String fileName : files) {
+                    if (fileName.startsWith("Doors00") && fileName.endsWith(".txt")) {
+                        loadDoorFile(context, carpetaEdificacion + "/" + fileName);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Log.e("CroquisFragment", "Error al listar archivos de puertas: " + carpetaEdificacion, e);
+        }
     }
+
+    private void loadDoorFile(Context context, String rutaArchivo) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(context.getAssets().open(rutaArchivo)));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                float x1 = Float.parseFloat(parts[0]);
+                float y1 = Float.parseFloat(parts[1]);
+                float x2 = Float.parseFloat(parts[2]);
+                float y2 = Float.parseFloat(parts[3]);
+
+                // Almacenar los segmentos de la puerta
+                doorSegments.add(new float[]{x1, y1, x2, y2});
+            }
+            reader.close();
+        } catch (IOException e) {
+            Log.e("CroquisFragment", "Error al cargar archivo de puertas: " + rutaArchivo, e);
+        }
+    }
+
 
     private void loadVerticesFile(Context context, String rutaArchivo) {
         try {
@@ -222,11 +262,11 @@ public class CroquisFragment extends Fragment {
         // Color de fondo
         canvas.drawColor(Color.parseColor("#FFF5E1")); // Fondo color crema
 
-        // Determinar el rango máximo de las coordenadas (suponiendo que las coordenadas de las habitaciones están entre 0 y 1000)
+        // Determinar el rango máximo de las coordenadas
         float maxX = 0;
         float maxY = 0;
 
-        // Encuentra el valor máximo de X y Y para normalizar
+        // Encuentra el valor máximo de X y Y
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             List<float[]> vertices = entry.getValue();
             for (float[] vertex : vertices) {
@@ -235,28 +275,27 @@ public class CroquisFragment extends Fragment {
             }
         }
 
-        // Dibujar cada habitación
+        // Dibujar las habitaciones
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             int roomId = entry.getKey();
             List<float[]> vertices = entry.getValue();
 
-            // Establecer color y estilo para cada habitación
+            // Establecer color y estilo para las habitaciones
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(6);
             paint.setColor(Color.BLACK);
 
-            // Dibujar los límites de la habitación (ajustar escala de las coordenadas)
+            // Dibujar los límites de la habitación
             for (int i = 0; i < vertices.size(); i++) {
                 float[] start = vertices.get(i);
                 float[] end = vertices.get((i + 1) % vertices.size());
 
-                // Normalizar las coordenadas y escalar al tamaño del ImageView
-                float startX = (start[0] / maxX) * imageViewWidth; // Normalizar y multiplicar por el ancho del ImageView
-                float startY = (start[1] / maxY) * imageViewHeight; // Normalizar y multiplicar por la altura del ImageView
+                float startX = (start[0] / maxX) * imageViewWidth;
+                float startY = (start[1] / maxY) * imageViewHeight;
                 float endX = (end[0] / maxX) * imageViewWidth;
                 float endY = (end[1] / maxY) * imageViewHeight;
 
-                canvas.drawLine(startX, startY, endX, endY, paint); // Dibujar la línea escalada
+                canvas.drawLine(startX, startY, endX, endY, paint);
             }
 
             // Dibujar el nombre de la habitación
@@ -265,13 +304,23 @@ public class CroquisFragment extends Fragment {
             String roomName = roomNames.get(roomId);
             if (roomName != null && !vertices.isEmpty()) {
                 float[] labelPos = vertices.get(0);
-                // Normalizar la posición del texto
                 float labelX = (labelPos[0] / maxX) * imageViewWidth;
                 float labelY = (labelPos[1] / maxY) * imageViewHeight;
 
-                // Dibujar el nombre de la habitación en la posición escalada
-                canvas.drawText(roomName, labelX, labelY - 20, paint); // Dibujar el nombre
+                canvas.drawText(roomName, labelX, labelY - 20, paint);
             }
+        }
+
+        // Dibujar las puertas en color naranja
+        paint.setColor(Color.parseColor("#FFA500")); // Naranja
+        paint.setStrokeWidth(8);
+        for (float[] door : doorSegments) {
+            float startX = (door[0] / maxX) * imageViewWidth;
+            float startY = (door[1] / maxY) * imageViewHeight;
+            float endX = (door[2] / maxX) * imageViewWidth;
+            float endY = (door[3] / maxY) * imageViewHeight;
+
+            canvas.drawLine(startX, startY, endX, endY, paint);
         }
 
         // Establecer el Bitmap en el ImageView
