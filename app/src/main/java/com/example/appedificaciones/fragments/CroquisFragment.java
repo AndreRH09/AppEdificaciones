@@ -114,11 +114,18 @@ public class CroquisFragment extends Fragment {
                 String roomName = roomNames.get(roomId);
 
                 if (roomName != null) {
+                    // Obtener el título de la edificación y pasar la carpeta asociada
+                    String tituloEdificacion = getArguments() != null ? getArguments().getString("tituloEdificacion") : "";
+
+                    // Reemplazar los espacios en el nombre de la carpeta
+                    String edificioFolder = tituloEdificacion.replace(" ", "");  // Eliminar los espacios
+
                     // Crear un Bundle para pasar los datos de la habitación
                     Bundle args = new Bundle();
                     args.putSerializable("roomVertices", new ArrayList<>(vertices)); // Pasar los vértices
                     args.putString("roomName", roomName); // Pasar el nombre de la habitación
                     args.putSerializable("doorSegments", new ArrayList<>(doorSegments)); // Pasar las puertas
+                    args.putString("edificioFolder", edificioFolder); // Pasar la carpeta de la edificación sin espacios
 
                     // Crear una instancia de RoomFragment y pasar los datos
                     RoomFragment roomFragment = new RoomFragment();

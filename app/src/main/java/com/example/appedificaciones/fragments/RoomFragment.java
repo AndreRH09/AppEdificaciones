@@ -1,132 +1,134 @@
 package com.example.appedificaciones.fragments;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.graphics.Rect;
+import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
 
 import com.example.appedificaciones.R;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class RoomFragment extends Fragment {
 
+    private TextView titleTextView;
+    private TextView descriptionTextView;
     private ImageView roomImageView;
-    private List<float[]> roomVertices = new ArrayList<>();
-    private List<float[]> doorSegments = new ArrayList<>();
-    private String roomName;
+
+    public RoomFragment() {
+        // Constructor vacío requerido
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflar el layout para este fragmento
         View view = inflater.inflate(R.layout.fragment_room, container, false);
+
+        // Inicializar las vistas
+        titleTextView = view.findViewById(R.id.roomNameTextView);
+        descriptionTextView = view.findViewById(R.id.roomDescriptionTextView);
         roomImageView = view.findViewById(R.id.roomImageView);
 
-        // Obtener los datos del Bundle
-        Bundle args = getArguments();
-        if (args != null) {
-            roomVertices = (List<float[]>) args.getSerializable("roomVertices");
-            roomName = args.getString("roomName", "");
-            doorSegments = (List<float[]>) args.getSerializable("doorSegments"); // Obtener las puertas
+        // Obtener los datos pasados desde el Fragmento anterior
+        if (getArguments() != null) {
+            String roomName = getArguments().getString("roomName");
+            String edificioFolder = getArguments().getString("edificioFolder"); // Carpeta de la edificación
+
+            // Establecer el título de la habitación en el TextView
+            titleTextView.setText(roomName);
+
+            // Cargar los datos de RoomsData.txt
+            loadRoomData(edificioFolder, roomName);
         }
 
-        // Dibujar la habitación con las puertas
-        view.post(this::drawRoom);
         return view;
     }
 
-    private void drawRoom() {
-        if (roomVertices.isEmpty()) return;
-
-        // Calcular los límites del bounding box
-        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
-        for (float[] vertex : roomVertices) {
-            minX = Math.min(minX, vertex[0]);
-            minY = Math.min(minY, vertex[1]);
-            maxX = Math.max(maxX, vertex[0]);
-            maxY = Math.max(maxY, vertex[1]);
+    // Método para cargar la imagen desde los assets
+    private void loadRoomImage(String imageName, String edificioFolder) {
+        Context context = getContext();
+        if (context != null && imageName != null) {
+            try {
+                // Construir la ruta completa de la imagen
+                String imagePath = edificioFolder + "/" + imageName;
+                InputStream inputStream = context.getAssets().open(imagePath);
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                roomImageView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("RoomFragment", "Error al cargar la imagen: " + imageName);
+            }
         }
+    }
 
-        // Calcular el tamaño de la habitación
-        float width = maxX - minX;
-        float height = maxY - minY;
+    // Método para cargar los datos de RoomsData.txt sin usar JSON
+    private void loadRoomData(final String edificioFolder, final String roomName) {
+        // Ejecutar en un hilo de fondo para evitar el bloqueo del hilo principal
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getContext();
+                if (context != null) {
+                    String path = edificioFolder + "/RoomsData.txt"; // Ruta completa del archivo
+                    Log.d("RoomFragment", "Cargando datos desde: " + path);
 
-        // Obtener el tamaño del ImageView
-        int imageViewWidth = roomImageView.getWidth();
-        int imageViewHeight = roomImageView.getHeight();
+                    try {
+                        // Abrir el archivo en los assets con codificación UTF-8
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(context.getAssets().open(path), "UTF-8"));
+                        String line;
 
-        // Calcular la escala para que la habitación se ajuste al ImageView
-        float scaleX = imageViewWidth / width;
-        float scaleY = imageViewHeight / height;
-        float scale = Math.min(scaleX, scaleY);
-
-        // Calcular el desplazamiento para centrar el dibujo
-        float offsetX = (imageViewWidth - width * scale) / 2;
-        float offsetY = (imageViewHeight - height * scale) / 2;
-
-        // Crear el bitmap y canvas
-        Bitmap bitmap = Bitmap.createBitmap(imageViewWidth, imageViewHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-
-        // Fondo
-        canvas.drawColor(Color.parseColor("#FFF5E1"));
-
-        // Dibujar los límites del cuarto
-        paint.setColor(Color.BLACK);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(6);
-
-        for (int i = 0; i < roomVertices.size(); i++) {
-            float[] start = roomVertices.get(i);
-            float[] end = roomVertices.get((i + 1) % roomVertices.size());
-
-            float startX = (start[0] - minX) * scale + offsetX;
-            float startY = (start[1] - minY) * scale + offsetY;
-            float endX = (end[0] - minX) * scale + offsetX;
-            float endY = (end[1] - minY) * scale + offsetY;
-
-            canvas.drawLine(startX, startY, endX, endY, paint);
-        }
+                        // Leer cada línea del archivo
+                        int contador = 0;
+                        while ((line = reader.readLine()) != null) {
+                            Log.d("RoomFragment", "Leyendo línea: " + line);
+                            // Separar los datos usando una coma como delimitador
+                            String[] roomData = line.split(",");
 
 
-        // Dibujar el nombre de la habitación
-        paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(60);
-        if (roomName != null) {
-            Rect textBounds = new Rect();
-            paint.getTextBounds(roomName, 0, roomName.length(), textBounds);
-            float x = (imageViewWidth - textBounds.width()) / 2f;
-            float y = (imageViewHeight + textBounds.height()) / 2f;
-            canvas.drawText(roomName, x, y, paint);
-        }
-
-        // Dibujar las puertas (en color naranja, por ejemplo)
-        paint.setColor(Color.parseColor("#FFA500")); // Naranja
-        paint.setStrokeWidth(8);
-
-        for (float[] door : doorSegments) {
-            float startX = (door[0] - minX) * scale + offsetX;
-            float startY = (door[1] - minY) * scale + offsetY;
-            float endX = (door[2] - minX) * scale + offsetX;
-            float endY = (door[3] - minY) * scale + offsetY;
-
-            canvas.drawLine(startX, startY, endX, endY, paint);
-        }
+                            Log.d("RoomFragment", "Este es el Room {0}: " + roomData[0].equals(roomName));
+                            Log.d("RoomFragment", "roomData[0]: " + roomData[0]);
+                            Log.d("RoomFragment", "roomName: " + roomName);
 
 
-        // Establecer el bitmap en el ImageView
-        roomImageView.setImageBitmap(bitmap);
+                            // Comprobar si la línea contiene la habitación que estamos buscando
+                            if (roomData[0].equals(roomName)) {
+                                String roomTitle = roomData[1].trim();  // 'tituloRoom' es el nombre a mostrar
+                                String description = roomData[2].trim();
+                                String imageName = roomData[3].trim();
+
+
+                                // Actualizar la UI en el hilo principal
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // Log para asegurarnos que estamos actualizando la UI
+                                        Log.d("RoomFragment", "Actualizando UI: " + roomTitle);
+                                        titleTextView.setText(roomTitle);  // Mostrar el 'tituloRoom'
+                                        descriptionTextView.setText(description);
+                                        loadRoomImage(imageName, edificioFolder);  // Actualizar la imagen
+                                    }
+                                });
+
+                                break; // Salir del bucle después de encontrar la habitación
+                            }
+                        }
+                        reader.close(); // Cerrar el BufferedReader
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 }

@@ -1,0 +1,5 @@
+Room 1, Jardín Exterior, Un jardín amplio y bien cuidado con bancos y caminos rodeados de plantas y flores, jardin.jpg
+Room 2, Nave Principal, La parte más larga del interior de la iglesia con bancos dispuestos a lo largo y una vista hacia el altar, nave.jpg
+Room 3, Ala Derecha, Un ala lateral derecha con acceso a las capillas y áreas privadas, alaDer.jpg
+Room 4, Altar, El área sagrada de la iglesia donde se realizan las ceremonias y se encuentra el altar mayor, altar.jpg
+Room 5, Ala Izquierda, Un ala lateral izquierda con acceso a las capillas y áreas privadas, alaIzq.jpeg
