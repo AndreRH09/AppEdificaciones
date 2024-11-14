@@ -32,6 +32,8 @@ public class CroquisFragment extends Fragment {
     private Map<Integer, List<float[]>> roomVertices = new HashMap<>();
     private Map<Integer, String> roomNames = new HashMap<>();
     private List<float[]> doorSegments = new ArrayList<>();
+    private float maxX = 0;
+    private float maxY = 0;
 
     public CroquisFragment() {
         // Required empty public constructor
@@ -54,18 +56,18 @@ public class CroquisFragment extends Fragment {
             drawMap();
         });
 
-        // Set a touch listener to detect clicks
         image.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // Ajustar las coordenadas del toque por el padding del ImageView
                     int paddingStart = image.getPaddingStart();
                     int paddingTop = image.getPaddingTop();
 
-                    // Ajustar las coordenadas según el padding
                     float touchX = event.getX() - paddingStart;
                     float touchY = event.getY() - paddingTop;
+
+                    // Log para verificar las coordenadas táctiles ajustadas
+                    Log.d("CroquisFragment", "Touch coordinates adjusted: X=" + touchX + " Y=" + touchY);
 
                     // Check if the touch coordinates are within any room
                     checkRoomClick(touchX, touchY);
@@ -138,16 +140,21 @@ public class CroquisFragment extends Fragment {
         int n = vertices.size();
         boolean inside = false;
 
-        // Loop through the polygon vertices to apply ray-casting algorithm
+        // Ajustar las coordenadas del toque según maxX y maxY para coincidir con el dibujo
+        float scaledTouchX = (touchX / image.getWidth()) * maxX;
+        float scaledTouchY = (touchY / image.getHeight()) * maxY;
+
+        // Aplicar el algoritmo de ray-casting en las coordenadas escaladas
         for (int i = 0, j = n - 1; i < n; j = i++) {
             float[] vertex1 = vertices.get(i);
             float[] vertex2 = vertices.get(j);
-            float x1 = vertex1[0] * 100; // Scale coordinates
-            float y1 = vertex1[1] * 100; // Scale coordinates
-            float x2 = vertex2[0] * 100; // Scale coordinates
-            float y2 = vertex2[1] * 100; // Scale coordinates
+            float x1 = vertex1[0];
+            float y1 = vertex1[1];
+            float x2 = vertex2[0];
+            float y2 = vertex2[1];
 
-            if (((y1 > touchY) != (y2 > touchY)) && (touchX < (x2 - x1) * (touchY - y1) / (y2 - y1) + x1)) {
+            if (((y1 > scaledTouchY) != (y2 > scaledTouchY)) &&
+                    (scaledTouchX < (x2 - x1) * (scaledTouchY - y1) / (y2 - y1) + x1)) {
                 inside = !inside;
             }
         }
@@ -262,11 +269,9 @@ public class CroquisFragment extends Fragment {
         // Color de fondo
         canvas.drawColor(Color.parseColor("#FFF5E1")); // Fondo color crema
 
-        // Determinar el rango máximo de las coordenadas
-        float maxX = 0;
-        float maxY = 0;
-
-        // Encuentra el valor máximo de X y Y
+        // Encuentra el valor máximo de X y Y para escalar los vértices
+        maxX = 0;
+        maxY = 0;
         for (Map.Entry<Integer, List<float[]>> entry : roomVertices.entrySet()) {
             List<float[]> vertices = entry.getValue();
             for (float[] vertex : vertices) {
@@ -280,12 +285,12 @@ public class CroquisFragment extends Fragment {
             int roomId = entry.getKey();
             List<float[]> vertices = entry.getValue();
 
-            // Establecer color y estilo para las habitaciones
+            // Configurar color y estilo de las habitaciones
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(6);
             paint.setColor(Color.BLACK);
 
-            // Dibujar los límites de la habitación
+            // Dibujar el contorno de la habitación
             for (int i = 0; i < vertices.size(); i++) {
                 float[] start = vertices.get(i);
                 float[] end = vertices.get((i + 1) % vertices.size());

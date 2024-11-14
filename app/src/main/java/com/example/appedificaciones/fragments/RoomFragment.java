@@ -114,7 +114,7 @@ public class RoomFragment extends Fragment {
 
         // Dibujar las puertas (en color naranja, por ejemplo)
         paint.setColor(Color.parseColor("#FFA500")); // Naranja
-        paint.setStrokeWidth(10);
+        paint.setStrokeWidth(8);
 
         for (float[] door : doorSegments) {
             float startX = (door[0] - minX) * scale + offsetX;
