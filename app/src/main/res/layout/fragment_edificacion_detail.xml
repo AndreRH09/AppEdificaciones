@@ -61,7 +61,49 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ver Croquis" />
+
+
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1.0"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Agregar un comentario:"
+                android:layout_marginTop="8dp"/>
+
+            <EditText
+                android:id="@+id/editTextComentario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Escribe tu comentario aquí"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnGuardarComentario"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar Comentario" />
+
+            <TextView
+                android:id="@+id/textComentarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Comentarios anteriores:" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/contenedorComentarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:padding="8dp"/>
         </LinearLayout>
     </ScrollView>
-
 </FrameLayout>

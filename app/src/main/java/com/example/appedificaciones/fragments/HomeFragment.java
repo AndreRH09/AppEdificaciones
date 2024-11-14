@@ -50,7 +50,7 @@ public class HomeFragment extends Fragment {
        // Observar los cambios en el objeto userLogged
         sharedViewModel.getUserLogged().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
-                txtTitle.setText("Bienvenido, " + user.getUsername());
+                txtTitle.setText(getString(R.string.welcome_string) + ", " + user.getUsername());
             }
         });
 
