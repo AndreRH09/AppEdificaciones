@@ -1,20 +1,28 @@
 package com.example.appedificaciones.fragments;
+
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.appedificaciones.ImageUtils;
 import android.Manifest;
 import com.example.appedificaciones.R;
-import com.google.android.gms.maps.model.Polyline;
+import com.example.appedificaciones.fragments.Comentario;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.example.appedificaciones.Edificacion;
 import android.location.Address;
@@ -31,7 +39,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import android.location.Location;
-
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -40,7 +47,14 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,7 +68,10 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private LatLng coordenadasEdificacion;
     private FusedLocationProviderClient fusedLocationClient;
     private Button btnVerCroquis; // Declara el botón
-
+    private View view;
+    private EditText editTextComentario;
+    private Button btnGuardarComentario;
+    private RatingBar ratingBar;
 
     public static EdificacionDetailFragment newInstance(Edificacion edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
@@ -70,33 +87,44 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_edificacion_detail, container, false);
+        view = inflater.inflate(R.layout.fragment_edificacion_detail, container, false);
 
+        // Inicializa los elementos de la interfaz
         TextView titulo = view.findViewById(R.id.textTitulo);
         TextView categoria = view.findViewById(R.id.textCategoria);
         TextView descripcion = view.findViewById(R.id.textDescripcion);
         ImageView imagen = view.findViewById(R.id.imageView);
+        editTextComentario = view.findViewById(R.id.editTextComentario);
+        btnGuardarComentario = view.findViewById(R.id.btnGuardarComentario);
+        ratingBar = view.findViewById(R.id.ratingBar);
+
+        // Llama a cargarComentarios() para cargar los comentarios al inicio
+        String tituloEdificacion = getArguments().getString(ARG_TITULO);
+        cargarComentarios(tituloEdificacion);
+
+        btnGuardarComentario.setOnClickListener(v -> {
+            String nombreUsuario = "NombreEjemplo"; // Obtén el nombre del usuario actual
+            int fotoUsuario = R.drawable.userlogo; // Usa una imagen de ejemplo o elige el icono
+            float valoracion = ratingBar.getRating(); // Obtén la valoración seleccionada
+
+            guardarComentario(tituloEdificacion, editTextComentario.getText().toString(), nombreUsuario, fotoUsuario, valoracion);
+            cargarComentarios(tituloEdificacion);
+            editTextComentario.setText("");
+        });
+
 
         // Encuentra el botón y configura el listener
         btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
         btnVerCroquis.setOnClickListener(v -> {
             CroquisFragment nuevoFragment = new CroquisFragment();
-
-            // Obtener el título de la edificación desde los argumentos
-            String tituloEdificacion = getArguments().getString(ARG_TITULO);
-
-            // Crear un bundle para pasar el título al fragmento de Croquis
             Bundle args = new Bundle();
             args.putString("tituloEdificacion", tituloEdificacion);
             nuevoFragment.setArguments(args);
-
-            // Reemplazar el fragmento actual con el nuevo fragmento de croquis
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView, nuevoFragment)
                     .addToBackStack(null)
                     .commit();
         });
-
 
         if (getArguments() != null) {
             titulo.setText(getArguments().getString(ARG_TITULO));
@@ -117,6 +145,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             mapFragment.getMapAsync(this);
         }
 
+
+
         return view;
     }
 
@@ -128,13 +158,9 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
 
         // Verifica si el permiso de ubicación está habilitado
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Habilitar la capa de ubicación
             mMap.setMyLocationEnabled(true);
-
-            // Obtener la ubicación actual
             obtenerUbicacionActual();
         } else {
-            // Si no tienes permisos, solicita los permisos
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
 
@@ -172,7 +198,6 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                 Address ubicacion = direcciones.get(0);
                 coordenadasEdificacion = new LatLng(ubicacion.getLatitude(), ubicacion.getLongitude());
 
-                // Agregar marcador y ajustar la cámara al marcador
                 mMap.addMarker(new MarkerOptions().position(coordenadasEdificacion).title(direccion));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordenadasEdificacion, 15));
             } else {
@@ -187,15 +212,13 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         if (coordenadasEdificacion != null) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origen.latitude + "," + origen.longitude +
                     "&destination=" + coordenadasEdificacion.latitude + "," + coordenadasEdificacion.longitude +
-                    "&key=AIzaSyBFAdlgdqGksJpJi3EuDNdpzjZFBiHjkOQ"; // Reemplaza "TU_API_KEY" con tu clave API de Directions
+                    "&key=AIzaSyBFAdlgdqGksJpJi3EuDNdpzjZFBiHjkOQ"; // Reemplaza con tu clave API de Directions
 
-            // Crear una solicitud Volley
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                // Obtener los pasos de la ruta
                                 JSONArray routes = response.getJSONArray("routes");
                                 if (routes.length() > 0) {
                                     JSONObject route = routes.getJSONObject(0);
@@ -204,17 +227,13 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                                         JSONObject leg = legs.getJSONObject(0);
                                         JSONArray steps = leg.getJSONArray("steps");
 
-                                        // Crear una lista de puntos para la ruta
                                         PolylineOptions polylineOptions = new PolylineOptions().width(5).color(0xFF0000FF);
-
                                         for (int i = 0; i < steps.length(); i++) {
                                             JSONObject step = steps.getJSONObject(i);
                                             JSONObject endLocation = step.getJSONObject("end_location");
                                             LatLng stepLatLng = new LatLng(endLocation.getDouble("lat"), endLocation.getDouble("lng"));
                                             polylineOptions.add(stepLatLng);
                                         }
-
-                                        // Dibuja la ruta en el mapa
                                         mMap.addPolyline(polylineOptions);
                                     }
                                 }
@@ -226,14 +245,82 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.e("Directions", "Error al obtener la ruta", error);
+                            Log.e("Directions", "Error en la solicitud", error);
                         }
                     });
-
-            // Añadir la solicitud a la cola de Volley
             Volley.newRequestQueue(requireContext()).add(request);
-        } else {
-            Log.e("Ruta", "Coordenadas de la edificación no disponibles.");
         }
+    }
+
+    private void guardarComentario(String tituloEdificacion, String comentarioTexto, String nombreUsuario, int fotoUsuario, float valoracion) {
+        String nombreArchivo = tituloEdificacion + "_comentarios.json";
+        JSONObject comentarioJson = new JSONObject();
+        try {
+            comentarioJson.put("nombreUsuario", nombreUsuario);
+            comentarioJson.put("comentario", comentarioTexto);
+            comentarioJson.put("valoracion", valoracion);
+            comentarioJson.put("fotoUsuario", fotoUsuario); // Podrías guardar solo un ID o URL
+
+            // Guarda el JSON en el archivo
+            try (FileOutputStream fos = requireContext().openFileOutput(nombreArchivo, Context.MODE_APPEND)) {
+                fos.write((comentarioJson.toString() + "\n").getBytes());
+
+            }
+        } catch (JSONException | IOException e) {
+            Log.e("GuardarComentario", "Error al guardar el comentario", e);
+        }
+    }
+
+    private void cargarComentarios(String tituloEdificacion) {
+        RecyclerView recyclerView = view.findViewById(R.id.contenedorComentarios);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        String nombreArchivo = tituloEdificacion + "_comentarios.json";
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader reader = null;
+
+        List<Comentario> listaComentarios = new ArrayList<>();
+
+        try {
+            // Intentamos abrir el archivo de comentarios
+            fis = requireContext().openFileInput(nombreArchivo);
+            isr = new InputStreamReader(fis);
+            reader = new BufferedReader(isr);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                try {
+                    JSONObject comentarioJson = new JSONObject(line);
+                    Comentario comentario = new Comentario(
+                            "nothing", // O el valor correcto que quieras pasar para fotoUsuario
+                            comentarioJson.getString("nombreUsuario"),
+                            (float) comentarioJson.getDouble("valoracion"),
+                            comentarioJson.getString("comentario")
+                    );
+
+                    listaComentarios.add(comentario);
+                } catch (JSONException e) {
+                    Log.e("CargarComentarios", "Error al procesar el comentario", e);
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            Log.i("CargarComentarios", "Archivo de comentarios no existe, se iniciará vacío.");
+        } catch (IOException e) {
+            Log.e("CargarComentarios", "Error al leer el archivo de comentarios", e);
+        } finally {
+            try {
+                if (reader != null) reader.close();
+                if (isr != null) isr.close();
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                Log.e("CargarComentarios", "Error al cerrar los recursos", e);
+            }
+        }
+
+        // Configurar el adaptador del RecyclerView
+        ComentariosAdapter adapter = new ComentariosAdapter(listaComentarios);
+        recyclerView.setAdapter(adapter);
     }
 }

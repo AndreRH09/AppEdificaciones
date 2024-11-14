@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="Bievenido"
+            android:text="@string/welcome_string"
             android:textColor="@color/textPrimary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -33,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Arequipa, conocida como la Ciudad Blanca, posee una gran variedad de edificaciones históricas. Muchas de ellas, como iglesias y casonas, son poco conocidas por los turistas. Este aplicativo busca cambiar eso al ofrecer una experiencia interactiva para descubrir estos lugares llenos de historia"
+            android:text="@string/arequipa_description"
             android:textSize="18sp" />
 
     <!-- Imagen representativa de edificaciones históricas -->
@@ -53,7 +53,7 @@
             android:layout_width="221dp"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/principal"
-            android:text="Ver Edificaciones"
+            android:text="@string/ver_edificaciones"
             android:textColor="@color/white" />
 
     </LinearLayout>

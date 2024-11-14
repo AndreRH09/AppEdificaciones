@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AppEdificaciones</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="arequipa_description">Arequipa, conocida como la Ciudad Blanca, posee una gran variedad de edificaciones históricas. Muchas de ellas, como iglesias y casonas, son poco conocidas por los turistas. Este aplicativo busca cambiar eso al ofrecer una experiencia interactiva para descubrir estos lugares llenos de historia</string>
+    <string name="welcome_string">Español - Bienvenido</string>
+    <string name="ver_edificaciones">Ver Edificaciones</string>
+</resources>
