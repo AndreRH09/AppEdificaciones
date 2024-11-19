@@ -20,6 +20,7 @@ import com.example.appedificaciones.fragments.HomeFragment;
 import com.example.appedificaciones.fragments.ListFragment;
 import com.example.appedificaciones.fragments.MapFragment;
 import com.example.appedificaciones.fragments.account.LoginFragment;
+import com.example.appedificaciones.model.ent.UserEntity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.gson.Gson;
@@ -31,7 +32,7 @@ public class HomeActivity extends AppCompatActivity {
     private ListFragment listaFragment = null;
     private MapFragment mapaFragment = null;
     private FavoritesFragment favoritesFragment = null;
-    private AccountEntity userLogged;
+    private UserEntity userLogged;
     private SharedViewModel sharedViewModel;
 
     @Override
@@ -47,7 +48,7 @@ public class HomeActivity extends AppCompatActivity {
 
             String accountEntityString = intent.getStringExtra(LoginFragment.USER_LOGGED);
             Gson gson = new Gson();
-            userLogged = gson.fromJson(accountEntityString,AccountEntity.class);
+            userLogged = gson.fromJson(accountEntityString, UserEntity.class);
 
             sharedViewModel.setUserLogged(userLogged);
         }

@@ -1,5 +1,6 @@
 package com.example.appedificaciones.fragments.account;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,11 +14,15 @@ import androidx.fragment.app.Fragment;
 
 import com.example.appedificaciones.AccountEntity;
 import com.example.appedificaciones.R;
+import com.example.appedificaciones.model.database.EdificationRepository;
+import com.example.appedificaciones.model.ent.UserEntity;
+import com.example.appedificaciones.model.database.AppDatabase;
 import com.google.gson.Gson;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
+import java.util.concurrent.Executors;
 
 public class RegisterFragment extends Fragment {
 
@@ -53,15 +58,20 @@ public class RegisterFragment extends Fragment {
             if (username.isEmpty() || password.isEmpty() || email.isEmpty() || phone.isEmpty()) {
                 Toast.makeText(getContext(), "Por favor completa todos los campos.", Toast.LENGTH_SHORT).show();
             } else {
-                AccountEntity accountEntity = new AccountEntity();
-                accountEntity.setEmail(edtEmail.getText().toString());
-                accountEntity.setPhone(edtPhone.getText().toString());
-                accountEntity.setUsername(edtUser.getText().toString());
-                accountEntity.setPassword(edtPassword.getText().toString());
 
-                Gson gson = new Gson();
-                String accountJson = gson.toJson(accountEntity);
-                saveAccountToFile(accountJson);
+                Context context = requireContext();
+                AppDatabase database = AppDatabase.getInstance(context);
+                EdificationRepository edificationRepository = new EdificationRepository(database);
+                UserEntity newUser = new UserEntity.Builder()
+                        .setUser(username)
+                        .setPassword(password)
+                        .setEmail(email)
+                        .setPhone(phone)
+                        .build();
+
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    edificationRepository.addUser(newUser);
+                });
 
                 Toast.makeText(getActivity().getApplicationContext(), "Usuario registrado: " + username, Toast.LENGTH_LONG).show();
                 Log.d("LoginActivity", "Usuario registrado:" + username);

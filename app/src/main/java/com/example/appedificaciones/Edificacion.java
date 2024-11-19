@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.example.appedificaciones.model.ent.EdificationEntity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

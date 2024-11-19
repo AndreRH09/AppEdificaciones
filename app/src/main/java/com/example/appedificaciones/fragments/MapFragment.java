@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.appedificaciones.R;
 import com.example.appedificaciones.Edificacion;
+import com.example.appedificaciones.model.ent.EdificationEntity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -37,7 +38,7 @@ import java.util.Locale;
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private HashMap<Marker, Edificacion> markerMap = new HashMap<>();
+    private HashMap<Marker, EdificationEntity> markerMap = new HashMap<>();
 
     public MapFragment() {
         // Constructor vacío requerido
@@ -63,7 +64,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // Configura el listener para clics en marcadores
         mMap.setOnMarkerClickListener(marker -> {
-            Edificacion edificacion = markerMap.get(marker);
+            EdificationEntity edificacion = markerMap.get(marker);
             if (edificacion != null) {
                 // Crear instancia de EdificacionDetailFragment
                 EdificacionDetailFragment detailFragment = EdificacionDetailFragment.newInstance(edificacion);
@@ -112,14 +113,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                 .snippet(edificacionJson.getString("resumen")));
 
                         // Crear objeto Edificacion y asociarlo al marcador
-                        Edificacion edificacion = new Edificacion(
-                                requireContext(),
-                                edificacionJson.getString("titulo"),
-                                edificacionJson.getString("categoria"),
-                                edificacionJson.getString("resumen"),
-                                edificacionJson.getString("descripcion"),
-                                edificacionJson.getString("imagen")
-                        );
+                        EdificationEntity edificacion = new EdificationEntity.Builder()
+                                .setTitulo(edificacionJson.getString("titulo"))
+                                .setCategoria(edificacionJson.getString("categoria"))
+                                .setDescripcion(edificacionJson.getString("descripcion"))
+                                .setResumen(edificacionJson.getString("resumen"))
+                                .setImagen(edificacionJson.getString("imagen"))
+                                .setAudio(edificacionJson.getString("audio"))
+                                .build();
+
                         markerMap.put(marker, edificacion);
 
                         boundsBuilder.include(ubicacion);

@@ -1,11 +1,16 @@
 package com.example.appedificaciones.fragments.account;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +22,20 @@ import android.widget.Toast;
 import com.example.appedificaciones.AccountEntity;
 import com.example.appedificaciones.HomeActivity;
 import com.example.appedificaciones.R;
+import com.example.appedificaciones.SharedViewModel;
+import com.example.appedificaciones.model.dao.UserDao;
+import com.example.appedificaciones.model.database.AppDatabase;
+import com.example.appedificaciones.model.database.EdificationRepository;
+import com.example.appedificaciones.model.ent.UserEntity;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
+import com.example.appedificaciones.model.database.AppDatabase;
 
 
 public class LoginFragment extends Fragment {
@@ -36,12 +48,14 @@ public class LoginFragment extends Fragment {
     private Button btnLogin, btnGoToRegister;
     private String accountEntityString;
     public static final String USER_LOGGED = "userAccount";
+    private EdificationRepository edificationRepository;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflar el layout para este fragment
         View view = inflater.inflate(R.layout.fragment_login, container, false);
+        edificationRepository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
 
         // Referencias a los elementos de la vista según los IDs del layout
         edtUsuario = view.findViewById(R.id.edtUsuario);
@@ -56,15 +70,28 @@ public class LoginFragment extends Fragment {
             String usuario = edtUsuario.getText().toString();
             String password = edtPassword.getText().toString();
 
-            if (checkCredentials(usuario, password)) {
-                Toast.makeText(getActivity(), "Login exitoso", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), HomeActivity.class);
-                intent.putExtra(USER_LOGGED, accountEntityString);
-                startActivity(intent);
+            getUserByUsernameAndPassword (usuario, password, user -> {
+                if (user != null) {
+                    /*// Usuario encontrado
+                    Toast.makeText(getActivity(), "Login exitoso", Toast.LENGTH_SHORT).show();
+                    // Obtener el ViewModel
+                    SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-            } else {
-                Toast.makeText(getActivity(), "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
-            }
+                    // Establecer el usuario en el ViewModel
+                    viewModel.setUserLogged(user);
+
+                    // Redirigir a la siguiente actividad
+                    Intent intent = new Intent(getActivity(), HomeActivity.class);
+                    startActivity(intent);*/
+
+                    Intent intent = new Intent(getActivity(), HomeActivity.class);
+                    intent.putExtra(USER_LOGGED, accountEntityString);
+                    startActivity(intent);
+                } else {
+                    // Usuario no encontrado
+                    Toast.makeText(getActivity(), "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         // Acción para el botón de ir a RegisterFragment
@@ -86,33 +113,20 @@ public class LoginFragment extends Fragment {
         return view;
     }
 
-   //Verficar las credenciales en el archivo de cuentas
-   private boolean checkCredentials(String username, String password) {
-       try {
-           // ruta completa del archivo en el almacenamiento interno
-           File accountsFile = new File(getActivity().getFilesDir(), RegisterFragment.ACCOUNTS_FILE_NAME);
+    public void getUserByUsernameAndPassword(String username, String password, OnUserResultCallback callback) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            UserEntity user = edificationRepository.getUserByUsernameAndPassword(username, password);
+            Gson gson = new Gson();
+            accountEntityString = gson.toJson(user);
 
-           // Lee el archivo desde esa ruta
-           BufferedReader reader = new BufferedReader(new FileReader(accountsFile));
-           String line;
-           Gson gson = new Gson();
-           while ((line = reader.readLine()) != null) {
-               AccountEntity account = gson.fromJson(line, AccountEntity.class);
+            // Llamar al callback con el resultado
+            new Handler(Looper.getMainLooper()).post(() -> callback.onResult(user));
+        });
+    }
 
-               if (account.getUsername().equals(username) && account.getPassword().equals(password)) {
-                   accountEntityString = line;
-
-                   return true;
-               }
-           }
-           reader.close();
-
-       } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return false;
+    // Interfaz para manejar el callback
+    public interface OnUserResultCallback {
+        void onResult(UserEntity user);
     }
 
     private void loadFragment(Fragment fragment) {

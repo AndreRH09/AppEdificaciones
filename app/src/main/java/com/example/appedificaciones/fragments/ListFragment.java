@@ -1,6 +1,8 @@
 package com.example.appedificaciones.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,13 +34,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+
+import com.example.appedificaciones.model.database.AppDatabase;
+import com.example.appedificaciones.model.database.EdificationRepository;
+import com.example.appedificaciones.model.database.FileRepository;
+import com.example.appedificaciones.model.ent.EdificationEntity;
+
 
 public class ListFragment extends Fragment {
     private RecyclerView recyclerView;
     private EdificacionAdapter adapter;
     private EditText searchInput;
     private Spinner spinnerCategory;
-    private List<Edificacion> edificaciones;
+    private List<EdificationEntity> edificaciones;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,32 +65,49 @@ public class ListFragment extends Fragment {
         spinnerCategory = view.findViewById(R.id.spinnerCategory);
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        edificaciones = cargarEdificacionesDesdeArchivo();
-        Log.d("ListFragment", edificaciones.toString());
-        adapter = new EdificacionAdapter(edificaciones);
-        recyclerView.setAdapter(adapter);
 
-        configurarSpinnerCategorias();
+        // Cargar edificaciones desde la base de datos o archivo de texto
+        cargarEdificaciones();
         configurarSearchInput();
-
-        // Configura el click listener para navegar al DetailFragment
-        adapter.setOnItemClickListener(edificacion -> {
-            // Crear una instancia de DetailFragment
-            Log.d("LISTFRAGMENT", edificacion.getImagen());
-            EdificacionDetailFragment detailFragment = EdificacionDetailFragment.newInstance(edificacion);
-
-            // Reemplazar el fragment actual con el DetailFragment
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainerView, detailFragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
-
         return view;
     }
 
+    private void cargarEdificaciones() {
+        EdificationRepository repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            edificaciones = repository.getAllEdifications();
+            if (edificaciones.isEmpty()) {
+                // Cargar desde archivo si la base de datos está vacía
+                FileRepository fileRepository = new FileRepository(requireContext());
+                edificaciones = fileRepository.getEdificacionesFromTextFile();
+
+                repository.addEdifications(edificaciones);
+
+            }
+            // Actualizar la vista en el hilo principal
+            new Handler(Looper.getMainLooper()).post(() -> {
+                adapter = new EdificacionAdapter(edificaciones);
+                recyclerView.setAdapter(adapter);
+
+                // Configura el click listener para navegar al DetailFragment
+                adapter.setOnItemClickListener(edificacion -> {
+                    EdificacionDetailFragment detailFragment = EdificacionDetailFragment.newInstance(edificacion);
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragmentContainerView, detailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                });
+
+                //cofigurar spinner de categorias
+                configurarSpinnerCategorias();
+            });
+        });
+    }
+
     private void configurarSpinnerCategorias() {
-        List<String> categorias = Edificacion.getCategoriesInList(edificaciones);
+        Log.d("configurarSpinnerCategorias lista", edificaciones.toString());
+        List<String> categorias = EdificationEntity.getCategoriesInList(edificaciones);
         categorias.add(0, "Todas");
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categorias);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -119,32 +145,4 @@ public class ListFragment extends Fragment {
         adapter.filtrar(textoBusqueda, categoriaSeleccionada);
     }
 
-    private List<Edificacion> cargarEdificacionesDesdeArchivo() {
-        List<Edificacion> edificaciones = new ArrayList<>();
-        try {
-            InputStream inputStream = getContext().getAssets().open("edificaciones.txt");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder jsonBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonBuilder.append(line);
-            }
-            JSONObject jsonObject = new JSONObject(jsonBuilder.toString());
-            JSONArray jsonArray = jsonObject.getJSONArray("edificaciones");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject obj = jsonArray.getJSONObject(i);
-                edificaciones.add(new Edificacion(
-                        getContext(),
-                        obj.getString("titulo"),
-                        obj.getString("categoria"),
-                        obj.getString("resumen"),
-                        obj.getString("descripcion"),
-                        obj.getString("imagen")
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return edificaciones;
-    }
 }

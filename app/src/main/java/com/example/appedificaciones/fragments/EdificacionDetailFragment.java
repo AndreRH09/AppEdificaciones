@@ -1,6 +1,7 @@
 package com.example.appedificaciones.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,22 +10,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appedificaciones.ImageUtils;
 import android.Manifest;
 import com.example.appedificaciones.R;
-import com.example.appedificaciones.fragments.Comentario;
+import com.example.appedificaciones.SharedViewModel;
+import com.example.appedificaciones.model.ent.EdificationEntity;
+import com.example.appedificaciones.model.database.EdificationRepository;
+import com.example.appedificaciones.model.database.AppDatabase;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.example.appedificaciones.Edificacion;
+
 import android.location.Address;
 import android.location.Geocoder;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -59,11 +63,14 @@ import java.util.List;
 import java.util.Locale;
 
 public class EdificacionDetailFragment extends Fragment implements OnMapReadyCallback {
+    private static final String ARG_ID = "id";
     private static final String ARG_TITULO = "titulo";
     private static final String ARG_CATEGORIA = "categoria";
     private static final String ARG_RESUMEN = "resumen";
     private static final String ARG_DESCRIPCION = "descripcion";
     private static final String ARG_IMAGEN = "imagen";
+    private static final String ARG_AUDIO = "audio";
+
     private GoogleMap mMap;
     private LatLng coordenadasEdificacion;
     private FusedLocationProviderClient fusedLocationClient;
@@ -72,14 +79,17 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private EditText editTextComentario;
     private Button btnGuardarComentario;
     private RatingBar ratingBar;
+    private ImageView imgAddFavoriteEdification;
 
-    public static EdificacionDetailFragment newInstance(Edificacion edificacion) {
+    public static EdificacionDetailFragment newInstance(EdificationEntity edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
         Bundle args = new Bundle();
+        args.putInt(ARG_ID, edificacion.getId());
         args.putString(ARG_TITULO, edificacion.getTitulo());
         args.putString(ARG_CATEGORIA, edificacion.getCategoria());
         args.putString(ARG_DESCRIPCION, edificacion.getDescripcion());
         args.putString(ARG_IMAGEN, edificacion.getImagen());
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -97,10 +107,44 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         editTextComentario = view.findViewById(R.id.editTextComentario);
         btnGuardarComentario = view.findViewById(R.id.btnGuardarComentario);
         ratingBar = view.findViewById(R.id.ratingBar);
+        imgAddFavoriteEdification = view.findViewById(R.id.iconFavorite);
 
         // Llama a cargarComentarios() para cargar los comentarios al inicio
         String tituloEdificacion = getArguments().getString(ARG_TITULO);
         cargarComentarios(tituloEdificacion);
+
+        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        sharedViewModel.getUserLogged().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                int userId = user.getUserId();
+                int edificationId = getArguments().getInt(ARG_ID); // Asegúrate de pasar el ID de la edificación al fragmento
+
+                // Verificar estado favorito al cargar
+                EdificationRepository repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
+                repository.isEdificationFavorite(userId, edificationId, isFavorite -> {
+                    if (isFavorite) {
+                        imgAddFavoriteEdification.setColorFilter(Color.RED); // Favorito
+                    } else {
+                        imgAddFavoriteEdification.setColorFilter(Color.BLACK); // No favorito
+                    }
+                });
+
+                // Configurar el click listener para alternar estado favorito
+                imgAddFavoriteEdification.setOnClickListener(v -> {
+                    repository.isEdificationFavorite(userId, edificationId, isFavorite -> {
+                        if (isFavorite) {
+                            // Eliminar de favoritos
+                            repository.removeFavoriteEdification(userId, edificationId);
+                            imgAddFavoriteEdification.setColorFilter(Color.BLACK);
+                        } else {
+                            // Agregar a favoritos
+                            repository.addFavoriteEdification(userId, edificationId);
+                            imgAddFavoriteEdification.setColorFilter(Color.RED);
+                        }
+                    });
+                });
+            }
+        });
 
         btnGuardarComentario.setOnClickListener(v -> {
             String nombreUsuario = "NombreEjemplo"; // Obtén el nombre del usuario actual
@@ -111,7 +155,6 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             cargarComentarios(tituloEdificacion);
             editTextComentario.setText("");
         });
-
 
         // Encuentra el botón y configura el listener
         btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
@@ -144,7 +187,6 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-
 
 
         return view;
