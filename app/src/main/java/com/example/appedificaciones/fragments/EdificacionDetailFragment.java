@@ -1,5 +1,6 @@
 package com.example.appedificaciones.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -43,26 +44,39 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import android.location.Location;
+import android.widget.Toast;
+
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class EdificacionDetailFragment extends Fragment implements OnMapReadyCallback {
+    private FusedLocationProviderClient fusedLocationClient;
+
     private static final String ARG_ID = "id";
     private static final String ARG_TITULO = "titulo";
     private static final String ARG_CATEGORIA = "categoria";
@@ -70,16 +84,15 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private static final String ARG_DESCRIPCION = "descripcion";
     private static final String ARG_IMAGEN = "imagen";
     private static final String ARG_AUDIO = "audio";
+    private String tituloEdificacion;
 
     private GoogleMap mMap;
     private LatLng coordenadasEdificacion;
-    private FusedLocationProviderClient fusedLocationClient;
-    private Button btnVerCroquis; // Declara el botón
+    private Button btnVerCroquis, btnMostrarComentarios; // Botón para mostrar comentarios
     private View view;
-    private EditText editTextComentario;
-    private Button btnGuardarComentario;
-    private RatingBar ratingBar;
     private ImageView imgAddFavoriteEdification;
+    private RecyclerView recyclerViewComentarios;
+    private List<String> comentarios;
 
     public static EdificacionDetailFragment newInstance(EdificationEntity edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
@@ -95,6 +108,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     }
 
     @Nullable
+    // Modificar el método onCreateView para asegurarnos de que los comentarios se recarguen siempre
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_edificacion_detail, container, false);
@@ -104,14 +118,10 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         TextView categoria = view.findViewById(R.id.textCategoria);
         TextView descripcion = view.findViewById(R.id.textDescripcion);
         ImageView imagen = view.findViewById(R.id.imageView);
-        editTextComentario = view.findViewById(R.id.editTextComentario);
-        btnGuardarComentario = view.findViewById(R.id.btnGuardarComentario);
-        ratingBar = view.findViewById(R.id.ratingBar);
         imgAddFavoriteEdification = view.findViewById(R.id.iconFavorite);
 
         // Llama a cargarComentarios() para cargar los comentarios al inicio
-        String tituloEdificacion = getArguments().getString(ARG_TITULO);
-        cargarComentarios(tituloEdificacion);
+        tituloEdificacion = getArguments().getString(ARG_TITULO);
 
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         sharedViewModel.getUserLogged().observe(getViewLifecycleOwner(), user -> {
@@ -146,16 +156,6 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             }
         });
 
-        btnGuardarComentario.setOnClickListener(v -> {
-            String nombreUsuario = "NombreEjemplo"; // Obtén el nombre del usuario actual
-            int fotoUsuario = R.drawable.userlogo; // Usa una imagen de ejemplo o elige el icono
-            float valoracion = ratingBar.getRating(); // Obtén la valoración seleccionada
-
-            guardarComentario(tituloEdificacion, editTextComentario.getText().toString(), nombreUsuario, fotoUsuario, valoracion);
-            cargarComentarios(tituloEdificacion);
-            editTextComentario.setText("");
-        });
-
         // Encuentra el botón y configura el listener
         btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
         btnVerCroquis.setOnClickListener(v -> {
@@ -169,6 +169,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                     .commit();
         });
 
+        // Configurar título, descripción, etc.
         if (getArguments() != null) {
             titulo.setText(getArguments().getString(ARG_TITULO));
             categoria.setText(getArguments().getString(ARG_CATEGORIA));
@@ -179,19 +180,164 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             }
         }
 
-        // Inicializa el cliente de ubicación
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-
-        // Inicializa el mapa
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.mapFragment);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-
+        btnMostrarComentarios = view.findViewById(R.id.btnMostrarComentarios); // Inicializa el botón
+        btnMostrarComentarios.setOnClickListener(v -> showCommentsDialog()); // Asocia el listener
 
         return view;
     }
 
+    private void cargarComentarios() {
+        // Obtener comentarios desde el archivo o la base de datos
+        ComentariosEdificacion comentariosEdificacion = getComentarios();
+
+        // Verificar si el RecyclerView existe en la vista
+        recyclerViewComentarios = view.findViewById(R.id.recyclerViewComentarios);
+        if (recyclerViewComentarios != null) {
+            // Configurar el RecyclerView
+            recyclerViewComentarios.setLayoutManager(new LinearLayoutManager(requireContext()));
+            recyclerViewComentarios.setAdapter(new ComentariosAdapter(comentariosEdificacion.getComentarios()));
+
+            // Mostrar mensaje si no hay comentarios
+            if (comentariosEdificacion.getComentarios().isEmpty()) {
+                Log.d("Comentarios", "No hay comentarios para esta edificación.");
+            }
+        } else {
+            Log.e("Comentarios", "RecyclerView no encontrado en la vista.");
+        }
+    }
+
+
+    private ComentariosEdificacion getComentarios() {
+        int edificationId = getArguments().getInt(ARG_ID);  // Obtener ID de la edificación
+        String nombreArchivo = obtenerNombreArchivoComentarios(edificationId);  // Archivo único para esta edificación
+
+        ComentariosEdificacion comentariosEdificacion = new ComentariosEdificacion();
+        comentariosEdificacion.setComentarios(new ArrayList<>()); // Inicializamos la lista de comentarios
+
+        try {
+            // Verificar si el archivo existe
+            FileInputStream fis = requireContext().openFileInput(nombreArchivo);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader reader = new BufferedReader(isr);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                stringBuilder.append(linea);
+            }
+
+            String json = stringBuilder.toString();
+            Log.d("ComentariosJSON", "Contenido del archivo: " + json);
+
+            if (json.isEmpty()) {
+                json = "{}";
+            }
+
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+
+            JsonArray comentariosArray = jsonObject.has("comentarios") ? jsonObject.getAsJsonArray("comentarios") : null;
+            if (comentariosArray != null) {
+                for (JsonElement element : comentariosArray) {
+                    Comentario comentario = gson.fromJson(element, Comentario.class);
+                    if (comentario.getEdificacionId() == edificationId) {
+                        comentariosEdificacion.getComentarios().add(comentario);
+                    }
+                }
+            }
+
+            reader.close();
+            fis.close();
+        } catch (FileNotFoundException e) {
+            Log.d("Comentarios", "Archivo no encontrado. Inicializando archivo.");
+            comentariosEdificacion.setEdificacion(tituloEdificacion);
+            guardarComentarios(comentariosEdificacion);  // Inicializar archivo si no existe
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return comentariosEdificacion;
+    }
+
+    private void guardarComentarios(ComentariosEdificacion comentariosEdificacion) {
+        int edificationId = getArguments().getInt(ARG_ID);  // Obtener ID de la edificación
+        String nombreArchivo = obtenerNombreArchivoComentarios(edificationId);  // Archivo único para esta edificación
+
+        if (comentariosEdificacion.getComentarios() == null) {
+            comentariosEdificacion.setComentarios(new ArrayList<>());
+        }
+
+        try (FileOutputStream fos = requireContext().openFileOutput(nombreArchivo, Context.MODE_PRIVATE);
+             OutputStreamWriter osw = new OutputStreamWriter(fos);
+             BufferedWriter writer = new BufferedWriter(osw)) {
+
+            Gson gson = new Gson();
+            String json = gson.toJson(comentariosEdificacion);
+            writer.write(json);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String obtenerNombreArchivoComentarios(int edificationId) {
+        return "comentarios_" + edificationId + ".json";  // Archivo único por edificación
+    }
+
+    private void showCommentsDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_comentarios, null);
+        recyclerViewComentarios = dialogView.findViewById(R.id.recyclerViewComentarios);
+        EditText editTextComentario = dialogView.findViewById(R.id.editTextComentario);
+        Button btnGuardarComentario = dialogView.findViewById(R.id.btnGuardarComentario);
+        RatingBar ratingBarComentario = dialogView.findViewById(R.id.ratingBarComentario); // Agregar RatingBar
+
+        // Obtener los comentarios desde el archivo
+        ComentariosEdificacion comentariosEdificacion = getComentarios();
+
+        recyclerViewComentarios.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerViewComentarios.setAdapter(new ComentariosAdapter(comentariosEdificacion.getComentarios()));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Comentarios")
+                .setView(dialogView)
+                .setCancelable(true);
+
+        // Guardar un nuevo comentario
+        btnGuardarComentario.setOnClickListener(v -> {
+            String nuevoComentario = editTextComentario.getText().toString();
+            float rating = ratingBarComentario.getRating();
+
+            if (!nuevoComentario.isEmpty() && rating > 0) {
+                // Obtener el ID de la edificación actual
+                int edificationId = getArguments().getInt(ARG_ID);
+
+                // Obtener el nombre del usuario logueado desde el SharedViewModel
+                SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                sharedViewModel.getUserLogged().observe(getViewLifecycleOwner(), user -> {
+                    if (user != null) {
+                        String nombreUsuario = user.getUser();  // Nombre del usuario logueado
+
+                        // Crear el nuevo comentario con el rating, el nombre del usuario y el ID de la edificación
+                        Comentario comentario = new Comentario(nombreUsuario, "2024-12-12", rating, nuevoComentario, edificationId);
+                        comentariosEdificacion.getComentarios().add(comentario);  // Agregar el comentario a la lista
+
+                        // Actualizar el adaptador y guardar los comentarios
+                        recyclerViewComentarios.getAdapter().notifyDataSetChanged();
+                        guardarComentarios(comentariosEdificacion);
+
+                        editTextComentario.setText(""); // Limpiar el campo de texto
+                        ratingBarComentario.setRating(0); // Restablecer el RatingBar
+                        Toast.makeText(requireContext(), "Comentario guardado", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(requireContext(), "Escribe un comentario y selecciona un rating", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.create().show();
+    }
 
 
     @Override
@@ -293,76 +439,9 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             Volley.newRequestQueue(requireContext()).add(request);
         }
     }
-
-    private void guardarComentario(String tituloEdificacion, String comentarioTexto, String nombreUsuario, int fotoUsuario, float valoracion) {
-        String nombreArchivo = tituloEdificacion + "_comentarios.json";
-        JSONObject comentarioJson = new JSONObject();
-        try {
-            comentarioJson.put("nombreUsuario", nombreUsuario);
-            comentarioJson.put("comentario", comentarioTexto);
-            comentarioJson.put("valoracion", valoracion);
-            comentarioJson.put("fotoUsuario", fotoUsuario); // Podrías guardar solo un ID o URL
-
-            // Guarda el JSON en el archivo
-            try (FileOutputStream fos = requireContext().openFileOutput(nombreArchivo, Context.MODE_APPEND)) {
-                fos.write((comentarioJson.toString() + "\n").getBytes());
-
-            }
-        } catch (JSONException | IOException e) {
-            Log.e("GuardarComentario", "Error al guardar el comentario", e);
-        }
-    }
-
-    private void cargarComentarios(String tituloEdificacion) {
-        RecyclerView recyclerView = view.findViewById(R.id.contenedorComentarios);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        String nombreArchivo = tituloEdificacion + "_comentarios.json";
-        FileInputStream fis = null;
-        InputStreamReader isr = null;
-        BufferedReader reader = null;
-
-        List<Comentario> listaComentarios = new ArrayList<>();
-
-        try {
-            // Intentamos abrir el archivo de comentarios
-            fis = requireContext().openFileInput(nombreArchivo);
-            isr = new InputStreamReader(fis);
-            reader = new BufferedReader(isr);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                try {
-                    JSONObject comentarioJson = new JSONObject(line);
-                    Comentario comentario = new Comentario(
-                            "nothing", // O el valor correcto que quieras pasar para fotoUsuario
-                            comentarioJson.getString("nombreUsuario"),
-                            (float) comentarioJson.getDouble("valoracion"),
-                            comentarioJson.getString("comentario")
-                    );
-
-                    listaComentarios.add(comentario);
-                } catch (JSONException e) {
-                    Log.e("CargarComentarios", "Error al procesar el comentario", e);
-                }
-            }
-
-        } catch (FileNotFoundException e) {
-            Log.i("CargarComentarios", "Archivo de comentarios no existe, se iniciará vacío.");
-        } catch (IOException e) {
-            Log.e("CargarComentarios", "Error al leer el archivo de comentarios", e);
-        } finally {
-            try {
-                if (reader != null) reader.close();
-                if (isr != null) isr.close();
-                if (fis != null) fis.close();
-            } catch (IOException e) {
-                Log.e("CargarComentarios", "Error al cerrar los recursos", e);
-            }
-        }
-
-        // Configurar el adaptador del RecyclerView
-        ComentariosAdapter adapter = new ComentariosAdapter(listaComentarios);
-        recyclerView.setAdapter(adapter);
+    @Override
+    public void onResume() {
+        super.onResume();
+        cargarComentarios();  // Recargar los comentarios cada vez que el fragmento se haga visible
     }
 }

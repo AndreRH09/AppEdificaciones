@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,55 +5,57 @@
     android:layout_height="match_parent"
     tools:context=".fragments.EdificacionDetailFragment">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/textTitulo"
-                    android:layout_width="287dp"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="titulo"
-                    android:textColor="@android:color/black"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/iconFavorite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:paddingVertical="8dp"
-                    android:src="@drawable/baseline_star_24" />
-            </LinearLayout>
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textCategoria"
-                android:layout_width="match_parent"
+                android:id="@+id/textTitulo"
+                android:layout_width="287dp"
                 android:layout_height="wrap_content"
+                android:paddingTop="8dp"
                 android:paddingBottom="4dp"
-                android:text="categoria"
-                android:textColor="@android:color/darker_gray"
-                android:textSize="16sp" />
+                android:text="titulo"
+                android:textColor="@android:color/black"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iconFavorite"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:paddingVertical="8dp"
+                android:src="@drawable/baseline_star_24" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textCategoria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="4dp"
+            android:text="categoria"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="16sp" />
+
+        <!-- Colocamos la descripción dentro del ScrollView -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp">
 
             <TextView
                 android:id="@+id/textDescripcion"
@@ -64,61 +65,26 @@
                 android:text="descripcion"
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
-            <fragment
-                android:id="@+id/mapFragment"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_gravity="bottom" />
+        </ScrollView>
 
-            <Button
-                android:id="@+id/btnVerCroquis"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ver Croquis" />
+        <fragment
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_gravity="bottom" />
 
+        <Button
+            android:id="@+id/btnVerCroquis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver Croquis" />
 
-
-            <RatingBar
-                android:id="@+id/ratingBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:numStars="5"
-                android:stepSize="1.0"
-                android:layout_marginTop="16dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Agregar un comentario:"
-                android:layout_marginTop="8dp"/>
-
-            <EditText
-                android:id="@+id/editTextComentario"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Escribe tu comentario aquí"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnGuardarComentario"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Guardar Comentario" />
-
-            <TextView
-                android:id="@+id/textComentarios"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="Comentarios anteriores:" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/contenedorComentarios"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:padding="8dp"/>
-        </LinearLayout>
-    </ScrollView>
+        <Button
+            android:id="@+id/btnMostrarComentarios"
+            android:layout_width="wrap_content"
+            android:layout_height="61dp"
+            android:layout_marginTop="16dp"
+            android:text="Mostrar comentarios" />
+    </LinearLayout>
 </FrameLayout>
