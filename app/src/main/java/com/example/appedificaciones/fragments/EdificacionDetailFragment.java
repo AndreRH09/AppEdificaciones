@@ -1,8 +1,10 @@
 package com.example.appedificaciones.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appedificaciones.AudioPlayer;
+import com.example.appedificaciones.AudioPlayerService;
 import com.example.appedificaciones.ImageUtils;
 import android.Manifest;
 import com.example.appedificaciones.R;
@@ -71,6 +75,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private static final String ARG_IMAGEN = "imagen";
     private static final String ARG_AUDIO = "audio";
 
+
     private GoogleMap mMap;
     private LatLng coordenadasEdificacion;
     private FusedLocationProviderClient fusedLocationClient;
@@ -80,6 +85,10 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private Button btnGuardarComentario;
     private RatingBar ratingBar;
     private ImageView imgAddFavoriteEdification;
+    private AudioPlayer audioPlayer;
+    private Button btnReproducirAudio;  // Botón para iniciar/pausar el audio
+    private Button btnDetenerAudio;  // Botón para iniciar/pausar el audio
+
 
     public static EdificacionDetailFragment newInstance(EdificationEntity edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
@@ -89,6 +98,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         args.putString(ARG_CATEGORIA, edificacion.getCategoria());
         args.putString(ARG_DESCRIPCION, edificacion.getDescripcion());
         args.putString(ARG_IMAGEN, edificacion.getImagen());
+        args.putString(ARG_AUDIO, edificacion.getAudio());
+
 
         fragment.setArguments(args);
         return fragment;
@@ -104,14 +115,35 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         TextView categoria = view.findViewById(R.id.textCategoria);
         TextView descripcion = view.findViewById(R.id.textDescripcion);
         ImageView imagen = view.findViewById(R.id.imageView);
+
+
+
         editTextComentario = view.findViewById(R.id.editTextComentario);
         btnGuardarComentario = view.findViewById(R.id.btnGuardarComentario);
         ratingBar = view.findViewById(R.id.ratingBar);
         imgAddFavoriteEdification = view.findViewById(R.id.iconFavorite);
 
+
         // Llama a cargarComentarios() para cargar los comentarios al inicio
         String tituloEdificacion = getArguments().getString(ARG_TITULO);
         cargarComentarios(tituloEdificacion);
+
+        btnReproducirAudio = view.findViewById(R.id.btnPlay);  // Botón de Play
+        btnDetenerAudio = view.findViewById(R.id.btnStop);    // Botón de Stop
+
+// Botón de "Play"
+        String audio = getArguments().getString(ARG_AUDIO);
+        manejarReproduccionAudio(audio, false); // false significa que no está en reproducción
+
+        btnReproducirAudio.setOnClickListener(v -> {
+            Log.d("debug Audio" , "audio: "+audio);
+            manejarReproduccionAudio(audio, false); // false significa que no está en reproducción
+        });
+
+// Botón de "Stop"
+        btnDetenerAudio.setOnClickListener(v -> {
+            manejarReproduccionAudio(audio, true);  // true significa que el audio está en reproducción y debe detenerse
+        });
 
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         sharedViewModel.getUserLogged().observe(getViewLifecycleOwner(), user -> {
@@ -156,6 +188,10 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             editTextComentario.setText("");
         });
 
+
+
+
+
         // Encuentra el botón y configura el listener
         btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
         btnVerCroquis.setOnClickListener(v -> {
@@ -190,6 +226,22 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
 
 
         return view;
+    }
+
+    public void manejarReproduccionAudio(String audio, boolean isPlaying) {
+        Intent intent = new Intent(getContext(), AudioPlayerService.class);
+
+        if (isPlaying) {  // Si está en reproducción, enviamos la acción "STOP"
+            intent.setAction("STOP");
+            intent.putExtra("audio", audio);  // Aquí envías el título del audio
+
+        } else {  // Si no está en reproducción, enviamos la acción "PLAY" y el título de la canción
+            intent.setAction("PLAY");
+            intent.putExtra("audio", audio);  // Aquí envías el título del audio
+        }
+
+        // Inicia o detiene el servicio según la acción
+        getContext().startService(intent);
     }
 
 
