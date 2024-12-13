@@ -1,53 +1,72 @@
 package com.example.appedificaciones.fragments;
 
 public class Comentario {
-    private String nombreUsuario;
-    private String fotoUsuario;  // ID de la foto o URL (puedes ajustar el tipo si usas URL)
-    private float valoracion;
-    private String texto;
+    private String usuario;
+    private String fecha;
+    private float rating;
+    private String comentario;
+    private int edificacionId;  // Nuevo campo para asociar el comentario con la edificación
 
-    // Constructor
-    public Comentario(String nombreUsuario, String fotoUsuario, float valoracion, String texto) {
-        this.nombreUsuario = nombreUsuario;
-        this.fotoUsuario = fotoUsuario;
-        this.valoracion = valoracion;
-        this.texto = texto;
+    // Constructor, getters y setters
+    public Comentario(String usuario, String fecha, float rating, String comentario, int edificacionId) {
+        this.usuario = usuario;
+        this.fecha = fecha;
+        this.rating = rating;
+        this.comentario = comentario;
+        this.edificacionId = edificacionId;
     }
 
-    // Getters y Setters
-    public String getNombreUsuario() {
-        return nombreUsuario;
+    public int getEdificacionId() {
+        return edificacionId;
     }
 
-    public void setNombreUsuario(String nombreUsuario) {
-        this.nombreUsuario = nombreUsuario;
+    public void setEdificacionId(int edificacionId) {
+        this.edificacionId = edificacionId;
     }
 
-    public String getFotoUsuario() {
-        return fotoUsuario;
+    // Getters y setters
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setFotoUsuario(String fotoUsuario) {
-        this.fotoUsuario = fotoUsuario;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
-    public float getValoracion() {
-        return valoracion;
+    public String getFecha() {
+        return fecha;
     }
 
-    public void setValoracion(float valoracion) {
-        this.valoracion = valoracion;
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
     }
 
-    public String getTexto() {
-        return texto;
+    public float getRating() {
+        return rating;
     }
 
-    public void setTexto(String texto) {
-        this.texto = texto;
+    public void setRating(float rating) {
+        this.rating = rating;
     }
 
     public String getComentario() {
-        return texto;
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
+
+    // Si deseas agregar un getter y setter para el nombre del usuario, puedes hacerlo así:
+    public String getNombreUsuario() {
+        return usuario; // Este puede ser el nombre del usuario que ya tienes almacenado en 'usuario'
+    }
+
+    public void setNombreUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+
+    public float getValoracion() {
+        return rating;
     }
 }
