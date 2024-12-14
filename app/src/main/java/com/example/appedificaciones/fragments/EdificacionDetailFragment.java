@@ -98,6 +98,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private static final String ARG_DESCRIPCION = "descripcion";
     private static final String ARG_IMAGEN = "imagen";
     private static final String ARG_AUDIO = "audio";
+    private static final String ARG_ANIO = "anio";
+
     private String tituloEdificacion;
     private boolean isPlaying = false;
     private boolean isStoppedApp = false;
@@ -128,6 +130,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         args.putString(ARG_DESCRIPCION, edificacion.getDescripcion());
         args.putString(ARG_IMAGEN, edificacion.getImagen());
         args.putString(ARG_AUDIO, edificacion.getAudio());
+        args.putString(ARG_ANIO, edificacion.getAnio());
 
         fragment.setArguments(args);
         return fragment;
@@ -144,6 +147,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         TextView categoria = view.findViewById(R.id.textCategoria);
         TextView descripcion = view.findViewById(R.id.textDescripcion);
         ImageView imagen = view.findViewById(R.id.imageView);
+        TextView anio = view.findViewById(R.id.textAnio);
         imgAddFavoriteEdification = view.findViewById(R.id.iconFavorite);
 
 
@@ -152,6 +156,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             titulo.setText(getArguments().getString(ARG_TITULO));
             categoria.setText(getArguments().getString(ARG_CATEGORIA));
             descripcion.setText(getArguments().getString(ARG_DESCRIPCION));
+            anio.setText(getString(R.string.year_display, getArguments().getString(ARG_ANIO)));
             Drawable drawable = ImageUtils.getDrawableFromAssets(requireContext(), getArguments().getString(ARG_IMAGEN));
             if (drawable != null) {
                 imagen.setImageDrawable(drawable);

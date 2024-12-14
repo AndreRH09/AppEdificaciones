@@ -5,4 +5,5 @@
     <string name="arequipa_description">Arequipa, known as the White City, has a great variety of historical buildings. Many of them, such as churches and mansions, are little known to tourists. This app seeks to change that by offering an interactive experience to discover these places full of history.</string>
     <string name="welcome_string">English - Welcome</string>
     <string name="ver_edificaciones">See Buildings</string>
+     <string name="year_display">Year: %1$s</string>
 </resources>

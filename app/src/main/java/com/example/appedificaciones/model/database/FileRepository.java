@@ -42,6 +42,7 @@ public class FileRepository {
                         .setResumen(obj.getString("resumen"))
                         .setImagen(obj.getString("imagen"))
                         .setAudio(obj.getString("audio"))
+                        .setAnio(obj.getString("año"))
                         .build();
                 edificaciones.add(edification);
             }

@@ -19,6 +19,9 @@ public class EdificationEntity {
     public String resumen;
     public String imagen;
     public String audio;
+    public String anio;
+
+
 
     // Constructor vacío necesario para Room
     public EdificationEntity() {
@@ -32,6 +35,7 @@ public class EdificationEntity {
         this.resumen = builder.resumen;
         this.imagen = builder.imagen;
         this.audio = builder.audio;
+        this.anio = builder.anio;
     }
 
     // Métodos getter y setter
@@ -63,6 +67,10 @@ public class EdificationEntity {
         return audio;
     }
 
+    public String getAnio() {return anio;}
+
+
+
     public void setId(int id) {
         this.id = id;
     }
@@ -91,6 +99,8 @@ public class EdificationEntity {
         this.audio = audio;
     }
 
+    public void setAnio(String anio) { this.anio = anio;}
+
     // Método utilitario
     public static ArrayList<String> getCategoriesInList(List<EdificationEntity> edificaciones) {
         HashSet<String> categoriesSet = new HashSet<>();
@@ -108,6 +118,7 @@ public class EdificationEntity {
         private String resumen;
         private String imagen;
         private String audio;
+        private String anio;
 
         public Builder setTitulo(String titulo) {
             this.titulo = titulo;
@@ -136,6 +147,11 @@ public class EdificationEntity {
 
         public Builder setAudio(String audio) {
             this.audio = audio;
+            return this;
+        }
+
+        public Builder setAnio(String anio) {
+            this.anio = anio;
             return this;
         }
 
