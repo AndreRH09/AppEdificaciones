@@ -1,26 +1,42 @@
 package com.example.appedificaciones.fragments;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appedificaciones.AudioPlayerService;
 import com.example.appedificaciones.ImageUtils;
 import android.Manifest;
 import com.example.appedificaciones.R;
@@ -55,7 +71,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,7 +84,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +99,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private static final String ARG_IMAGEN = "imagen";
     private static final String ARG_AUDIO = "audio";
     private String tituloEdificacion;
+    private boolean isPlaying = false;
+    private boolean isStoppedApp = false;
 
     private GoogleMap mMap;
     private LatLng coordenadasEdificacion;
@@ -94,6 +110,15 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     private RecyclerView recyclerViewComentarios;
     private List<String> comentarios;
 
+    private ImageButton btnPlay,btnPause, btnStop;
+    private SeekBar seekBar;
+    private TextView passTimeTextView;
+    private TextView dueTimeTextView;
+
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 100; // Define your request code
+    private ActivityResultLauncher<String> notificationPermissionLauncher;
+
+
     public static EdificacionDetailFragment newInstance(EdificationEntity edificacion) {
         EdificacionDetailFragment fragment = new EdificacionDetailFragment();
         Bundle args = new Bundle();
@@ -102,6 +127,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         args.putString(ARG_CATEGORIA, edificacion.getCategoria());
         args.putString(ARG_DESCRIPCION, edificacion.getDescripcion());
         args.putString(ARG_IMAGEN, edificacion.getImagen());
+        args.putString(ARG_AUDIO, edificacion.getAudio());
 
         fragment.setArguments(args);
         return fragment;
@@ -131,6 +157,52 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                 imagen.setImageDrawable(drawable);
             }
         }
+
+        //Reproductor de audio
+
+        btnPlay = view.findViewById(R.id.btnPlay);
+        btnPause = view.findViewById(R.id.btnPause);
+        btnStop = view.findViewById(R.id.btnStop);
+        seekBar = view.findViewById(R.id.seekBar);
+        passTimeTextView = view.findViewById(R.id.passTime);
+        dueTimeTextView = view.findViewById(R.id.dueTime);
+
+        btnPlay.setOnClickListener(v -> controlAudio("PLAY"));
+        btnPause.setOnClickListener(v -> controlAudio("PAUSE"));
+        btnStop.setOnClickListener(v -> {
+            // Detener la reproducción de audio
+            controlAudio("STOP");
+            passTimeTextView.setText("00:00");
+            // Establecer el SeekBar a 0
+            seekBar.setProgress(0);
+        });
+
+        seekBar.setMax(100);  // Asumimos que el máximo es 100
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    // Si el usuario mueve el SeekBar, cambia la posición del audio
+                    Intent intent = new Intent(requireContext(), AudioPlayerService.class);
+                    intent.putExtra("audio", getArguments().getString(ARG_AUDIO));
+                    intent.setAction("SEEK");
+                    intent.putExtra("seek_position", progress);
+                    requireContext().startService(intent);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        // Registrar el receiver para escuchar el progreso de la música
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(progressReceiver,
+                new android.content.IntentFilter("AUDIO_PROGRESS"));
 
 
         // Ver croquis
@@ -163,6 +235,44 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         initializeFavorites();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Inicializar el ActivityResultLauncher
+        notificationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        // Permiso concedido
+                        Toast.makeText(requireContext(), "Permiso para notificaciones concedido", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Permiso denegado
+                        Toast.makeText(requireContext(), "Permiso para notificaciones denegado", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // Verificar si se tiene el permiso de notificaciones
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // Solicitar permiso
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    private void controlAudio(String action) {
+        if (action.equals("PLAY")){
+            isPlaying = true;
+        } else if (action.equals("STOP") || action.equals("PAUSE")) {
+            isPlaying = false;
+        }
+        Intent intent = new Intent(requireContext(), AudioPlayerService.class);
+        intent.putExtra("audio", getArguments().getString(ARG_AUDIO));
+        intent.setAction(action);
+        requireContext().startService(intent);
     }
 
     private void cargarComentarios() {
@@ -458,5 +568,78 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
     public void onResume() {
         super.onResume();
         cargarComentarios();  // Recargar los comentarios cada vez que el fragmento se haga visible
+
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("DETAIL", "onPause: EL FRAGMENT ESTA EN PAUSE");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("DETAIL", "onStop: EL FRAGMENT ESTA EN STOP");
+        if(!isStoppedApp){
+            Intent intent = new Intent(requireContext(), AudioPlayerService.class);
+            intent.putExtra("audio", getArguments().getString(ARG_AUDIO));
+            intent.setAction("STOP");
+            requireContext().startService(intent);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(progressReceiver);
+
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        requireActivity().getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                if(isPlaying ){
+                    isStoppedApp = false;
+                    Intent intent = new Intent(requireContext(), AudioPlayerService.class);
+                    intent.putExtra("audio", getArguments().getString(ARG_AUDIO));
+                    intent.setAction("STOP_FOREGROUND");
+                    requireContext().startService(intent);
+                }
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                // Inicia el servicio en segundo plano al salir de la app
+                if (isPlaying) {
+                    isStoppedApp = true;
+                    Intent intent = new Intent(requireContext(), AudioPlayerService.class);
+                    intent.putExtra("audio", getArguments().getString(ARG_AUDIO));
+                    intent.setAction("START_FOREGROUND");
+                    requireContext().startService(intent);
+                }
+            }
+        });
+    }
+
+    // BroadcastReceiver para recibir el progreso del audio
+    private final BroadcastReceiver progressReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int progress = intent.getIntExtra("progress", 0);
+            String passTime = intent.getStringExtra("passTime");
+            String dueTime = intent.getStringExtra("dueTime");
+
+            // Actualizar SeekBar
+            seekBar.setProgress(progress);
+            // Actualizar los TextViews de tiempo
+
+            passTimeTextView.setText(passTime);  // Tiempo transcurrido
+            dueTimeTextView.setText(dueTime);    // Duración total
+        }
+    };
 }

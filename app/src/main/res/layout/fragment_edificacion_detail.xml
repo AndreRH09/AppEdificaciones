@@ -67,6 +67,78 @@
                 android:textSize="14sp" />
         </ScrollView>
 
+        <!-- Controles de reproducción -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="fill_horizontal"
+            android:orientation="horizontal">
+
+            <!-- Botón Reproducir -->
+            <ImageButton
+                android:id="@+id/btnPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_play_arrow_24" />
+
+            <!-- Botón Pausar -->
+            <ImageButton
+                android:id="@+id/btnPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_pause_24" />
+
+            <!-- Botón Stop -->
+            <ImageButton
+                android:id="@+id/btnStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_stop_24" />
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                />
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_margin="0dp"
+                android:layout_height="32dp">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/passTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="00:00" />
+
+                    <TextView
+                        android:id="@+id/sep"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="  :  " />
+
+                    <TextView
+                        android:id="@+id/dueTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="00:00" />
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
         <fragment
             android:id="@+id/mapFragment"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -74,17 +146,26 @@
             android:layout_height="300dp"
             android:layout_gravity="bottom" />
 
-        <Button
-            android:id="@+id/btnVerCroquis"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ver Croquis" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnMostrarComentarios"
-            android:layout_width="wrap_content"
-            android:layout_height="61dp"
-            android:layout_marginTop="16dp"
-            android:text="Mostrar comentarios" />
+            <Button
+                android:id="@+id/btnVerCroquis"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:text="Ver Croquis" />
+
+            <Button
+                android:id="@+id/btnMostrarComentarios"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="0dp"
+                android:text="Mostrar comentarios" />
+        </LinearLayout>
+
+
     </LinearLayout>
 </FrameLayout>

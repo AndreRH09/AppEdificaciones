@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class AudioPlayerService extends Service {
     private MediaPlayer mediaPlayer;
@@ -20,19 +21,23 @@ public class AudioPlayerService extends Service {
     private boolean isForeground = false;
     private Handler handler = new Handler();
     private Runnable updateProgressRunnable;
+    private String audio;
+    private int lastPosition = 0; // Posición actual del audio
+    private boolean isPause =false;
 
     @Override
     public void onCreate() {
         super.onCreate();
         // Inicializa el MediaPlayer con un archivo vacío (se cargará dinámicamente más tarde)
         mediaPlayer = new MediaPlayer();
+        mediaPlayer.setLooping(false); // No repetir por defecto
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        String audio = intent.getStringExtra("audio");  // Obtener el nombre del archivo de audio desde el Intent
-
+        audio = intent.getStringExtra("audio");  // Obtener el nombre del archivo de audio desde el Intent
 
         // Verificamos si 'audio' no es null antes de proceder
         if (audio != null) {
@@ -41,24 +46,52 @@ public class AudioPlayerService extends Service {
 
             if ("PLAY".equals(action)) {
                 if (!mediaPlayer.isPlaying() && resourceId != 0) {
-                    mediaPlayer.reset();
+                    //mediaPlayer.reset();
                     mediaPlayer = MediaPlayer.create(this, resourceId);
+
+                    if (lastPosition > 0) {
+                        mediaPlayer.seekTo(lastPosition); // Reanudar desde la última posición
+                    }
                     mediaPlayer.start();
-                    startForegroundService();
+                    // Establecer el OnCompletionListener
+                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            lastPosition = 0; // Reiniciar la posición cuando el audio termine
+                        }
+                    });
+
+                    startProgressUpdate();
+                    isPause = false;
                 } else if (resourceId == 0) {
                     Log.e("AudioPlayerService", "Archivo de audio no encontrado: " + audio);
                 }
-            } else if ("STOP".equals(action)) {
-                // Solo intentar detener el audio si el mediaPlayer está realmente en reproducción
+            }else if ("PAUSE".equals(action)) {
                 if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                    stopSelf(); // Detener el servicio
-                } else {
-                    Log.w("AudioPlayerService", "Intento de detener el audio cuando no está en reproducción.");
+                    mediaPlayer.pause();
+                    lastPosition = mediaPlayer.getCurrentPosition(); // Guardar posición actual
+                    stopProgressUpdate();
+                    isPause = true;
                 }
+            } else if ("STOP".equals(action)) {
+                mediaPlayer.stop();
+                stopSelf(); // Detener el servicio
+                stopProgressUpdate();
+                lastPosition = 0; // Reiniciar la posición
+                isPause = false;
+            } else if ("START_FOREGROUND".equals(action)) {
+                startForegroundService();
+            } else if ("STOP_FOREGROUND".equals(action)) {
+                stopForegroundService();
+            } else if ("SEEK".equals(action)) {
+
+                int seekPosition = intent.getIntExtra("seek_position", 0);
+                Log.d("SEEK", "cambio de posicion "+ seekPosition);
+                lastPosition = seekPosition * mediaPlayer.getDuration() / 100;
+                mediaPlayer.seekTo(seekPosition * mediaPlayer.getDuration() / 100); // Calcular la posición proporcional
+
             }
 
-            updateNotification();
         } else {
             Log.e("AudioPlayerService", "Error: 'audio' no se ha pasado en el Intent.");
         }
@@ -70,7 +103,6 @@ public class AudioPlayerService extends Service {
         if (!isForeground) {
             Log.d("AudioPlayerService", "Iniciando servicio en primer plano");
             Notification notification = createNotification();
-
 
             startForeground(1,notification);
             isForeground = true;
@@ -87,7 +119,7 @@ public class AudioPlayerService extends Service {
 
     private Notification createNotification() {
         Log.d("AudioPlayerService", "Creando notificación");
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent = new Intent(this, HomeActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this,
@@ -116,8 +148,8 @@ public class AudioPlayerService extends Service {
                 .setContentText("Reproduciendo audio en segundo plano")
                 .setSmallIcon(R.drawable.baseline_audiotrack_24)
                 .setContentIntent(pendingIntent)
-                .addAction(R.drawable.baseline_stop_24, "Detener", getActionPendingIntent("STOP"))
-                .addAction(R.drawable.baseline_play_arrow_24, "Reproducir", getActionPendingIntent("PLAY"))
+                .addAction(R.drawable.baseline_play_arrow_24, "Play", getActionPendingIntent("PLAY"))
+                .addAction(R.drawable.baseline_pause_24, "Pause", getActionPendingIntent("PAUSE"))
                 .setProgress(100, progress, false)  // Muestra el progreso
                 .build();
     }
@@ -140,6 +172,8 @@ public class AudioPlayerService extends Service {
 
     private PendingIntent getActionPendingIntent(String action) {
         Intent actionIntent = new Intent(this, AudioPlayerService.class);
+        actionIntent.putExtra("audio", audio);
+
         actionIntent.setAction(action);
         return PendingIntent.getService(
                 this,
@@ -154,5 +188,55 @@ public class AudioPlayerService extends Service {
 
         Notification notification = createNotification();
         startForeground(1, notification); // Actualiza la notificación
+    }
+
+    private void startProgressUpdate() {
+        updateProgressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer.isPlaying()) {
+                    // Progreso del audio como porcentaje
+                    int progress = mediaPlayer.getCurrentPosition() * 100 / mediaPlayer.getDuration();
+
+                    // Calcular tiempo transcurrido (passTime)
+                    int currentPosition = mediaPlayer.getCurrentPosition(); // En milisegundos
+                    String passTime = formatTime(currentPosition); // Convertir a formato "mm:ss"
+
+                    // Calcular duración total (dueTime)
+                    int totalDuration = mediaPlayer.getDuration(); // En milisegundos
+                    String dueTime = formatTime(totalDuration); // Convertir a formato "mm:ss"
+
+                    // Enviar los tiempos al MainActivity
+                    sendProgressToActivity(progress, passTime, dueTime);
+                    if(isForeground){
+                        updateNotification();
+                    }
+
+                    // Actualizar cada segundo
+                    handler.postDelayed(this, 250);
+                }
+            }
+        };
+        handler.post(updateProgressRunnable);
+    }
+
+    private String formatTime(int timeInMillis) {
+        int minutes = (timeInMillis / 1000) / 60;
+        int seconds = (timeInMillis / 1000) % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    private void sendProgressToActivity(int progress, String passTime, String dueTime) {
+        Intent intent = new Intent("AUDIO_PROGRESS");
+        intent.putExtra("progress", progress);
+        intent.putExtra("passTime", passTime);
+        intent.putExtra("dueTime", dueTime);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void stopProgressUpdate() {
+        if (updateProgressRunnable != null) {
+            handler.removeCallbacks(updateProgressRunnable);
+        }
     }
 }
