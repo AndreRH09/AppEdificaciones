@@ -155,7 +155,7 @@
 
             <Button
                 android:id="@+id/btnVerCroquis"
-                android:layout_width="wrap_content"
+                android:layout_width="170dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="0dp"
                 android:text="Ver Croquis" />
