@@ -234,10 +234,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
             btnVerCroquis.setCompoundDrawablesWithIntrinsicBounds(drawableLogo, null, null, null); // Coloca el logo en el lado izquierdo
         }
         btnVerCroquis.setOnClickListener(v -> {
-            CroquisFragment nuevoFragment = new CroquisFragment();
-            Bundle args = new Bundle();
-            args.putString("tituloEdificacion", tituloEdificacion);
-            nuevoFragment.setArguments(args);
+            GalleryFragment nuevoFragment = new GalleryFragment();
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView, nuevoFragment)
                     .addToBackStack(null)

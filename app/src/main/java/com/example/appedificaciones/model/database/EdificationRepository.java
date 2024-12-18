@@ -1,6 +1,7 @@
 package com.example.appedificaciones.model.database;
 
 import android.app.Application;
+import android.util.Log;
 
 import com.example.appedificaciones.model.dao.FavoriteDao;
 import com.example.appedificaciones.model.ent.EdificationEntity;
@@ -8,6 +9,11 @@ import com.example.appedificaciones.model.ent.FavoriteEdificationEntity;
 import com.example.appedificaciones.model.ent.UserEntity;
 
 import java.util.List;
+import com.example.appedificaciones.model.ent.DoorEntity;
+import com.example.appedificaciones.model.ent.PictureEntity;
+import com.example.appedificaciones.model.ent.RoomAndVertex;
+import com.example.appedificaciones.model.ent.RoomEntity;
+import com.example.appedificaciones.model.ent.VertexEntity;
 import java.util.concurrent.Executors;
 
 public class EdificationRepository {
@@ -19,6 +25,62 @@ public class EdificationRepository {
         this.appDatabase = appDatabase;
         favoriteEdificationDao = appDatabase.favoriteDao();
     }
+
+
+    //Fin metodos bd para canvas
+    public List<PictureEntity> getPictures() {
+        return appDatabase.pictureDao().getAll();
+    }
+
+    public List<VertexEntity> getVertexes() {
+        return appDatabase.vertexDao().getAll();
+    }
+
+    public List<RoomEntity> getRoomById(int roomId) {
+        return appDatabase.roomVertexDao().getByRoomId(roomId);
+    }
+
+    public List<RoomAndVertex> getRoomWithVertexes() {
+        return appDatabase.roomVertexDao().getRoomWithVertex();
+    }
+
+    public RoomAndVertex getRoomWithVertexByRoomId(int roomId) {
+        return appDatabase.roomVertexDao().getRoomWithVertexByRoomId(roomId);
+    }
+
+    public List<DoorEntity> getDoors() {
+        return appDatabase.doorDao().getAll();
+    }
+
+    public List<PictureEntity> getPicturesByRoomId(int roomId) {
+        return appDatabase.pictureDao().getPicturesByRoomId(roomId);
+    }
+
+    public PictureEntity getPictureById(int pictureId) {
+        Log.d("TAG", "GalleryRepository pictureId:" + pictureId);
+        return appDatabase.pictureDao().getPictureById(pictureId);
+    }
+
+    public void addPictures(List<PictureEntity> pictureEntityList) {
+        appDatabase.pictureDao().insert(pictureEntityList);
+    }
+
+    public void addDoors(List<DoorEntity> doorEntityList) {
+        appDatabase.doorDao().insert(doorEntityList);
+    }
+
+    public void addRooms(List<RoomEntity> roomEntityList) {
+        appDatabase.roomVertexDao().insert(roomEntityList);
+    }
+
+    public void addVertexes(List<VertexEntity> vertexEntityList) {
+        appDatabase.vertexDao().insert(vertexEntityList);
+    }
+
+
+    //Fin metodos bd para canvas
+
+
 
     // Verificar si una edificación ya está en favoritos
     public void isEdificationFavorite(int userId, int edificationId, OnFavoriteCheckCallback callback) {

@@ -5,6 +5,7 @@
     <color name="principal">#800020</color>
     <color name="secondary">#D3D3D3</color>
     <color name="icon">@color/white</color>
+    <color name="progressColor">#FF9800</color>
 
     <color name="background">#F5F5F5</color> <!-- Fondo claro -->
     <color name="textPrimary">#000000</color> <!-- Texto principal en negro -->

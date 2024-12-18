@@ -39,7 +39,12 @@ import java.util.concurrent.Executors;
 import com.example.appedificaciones.model.database.AppDatabase;
 import com.example.appedificaciones.model.database.EdificationRepository;
 import com.example.appedificaciones.model.database.FileRepository;
+import com.example.appedificaciones.model.ent.DoorEntity;
 import com.example.appedificaciones.model.ent.EdificationEntity;
+import com.example.appedificaciones.model.ent.PictureEntity;
+import com.example.appedificaciones.model.ent.RoomAndVertex;
+import com.example.appedificaciones.model.ent.RoomEntity;
+import com.example.appedificaciones.model.ent.VertexEntity;
 
 
 public class ListFragment extends Fragment {
@@ -48,7 +53,7 @@ public class ListFragment extends Fragment {
     private EditText searchInput;
     private Spinner spinnerCategory;
     private List<EdificationEntity> edificaciones;
-
+    private FileRepository fileRepository;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +77,8 @@ public class ListFragment extends Fragment {
         return view;
     }
 
+
+
     private void cargarEdificaciones() {
         EdificationRepository repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
 
@@ -79,8 +86,55 @@ public class ListFragment extends Fragment {
             edificaciones = repository.getAllEdifications();
             if (edificaciones.isEmpty()) {
                 // Cargar desde archivo si la base de datos está vacía
-                FileRepository fileRepository = new FileRepository(requireContext());
+                fileRepository = new FileRepository(requireContext());
                 edificaciones = fileRepository.getEdificacionesFromTextFile();
+
+                String[] vertexFiles = new String[]{"RoomVertex001.txt", "RoomVertex002.txt","RoomVertex003.txt","RoomVertex004.txt","RoomVertex005.txt"};
+
+                List<VertexEntity> vertexEntityList = fileRepository.getVertexes(vertexFiles);
+                Executors.newSingleThreadExecutor().execute(() -> {
+                            repository.addVertexes(vertexEntityList);
+                        }
+                );
+
+                String doorsFilename = "Doors.txt";
+                List<DoorEntity> doorEntityList = fileRepository.getDoors(doorsFilename);
+                Executors.newSingleThreadExecutor().execute(() -> {
+                            repository.addDoors(doorEntityList);
+                        }
+                );
+
+                String picturesFilename = "Pictures.txt";
+                List<PictureEntity> pictureEntityList = fileRepository.getPictures(picturesFilename);
+                Executors.newSingleThreadExecutor().execute(() -> {
+                            repository.addPictures(pictureEntityList);
+                        }
+                );
+
+                String roomFilename = "Rooms.txt";
+                List<RoomEntity> roomEntityList = fileRepository.getRooms(roomFilename);
+                Executors.newSingleThreadExecutor().execute(() -> {
+                            repository.addRooms(roomEntityList);
+                        }
+                );
+
+
+                Executors.newSingleThreadExecutor().execute(() -> {
+                            List<RoomAndVertex> roomAndVertexList = repository.getRoomWithVertexes();
+                            roomAndVertexList.forEach(obj -> {
+                                Log.d("Room:", obj.roomEntity.label);
+                                obj.vertexEntityList.forEach(t -> {
+                                    Log.d("Vertex", t.getRoomId() + "," + t.getX() + "," + t.getY());
+                                });
+                            });
+
+                            pictureEntityList.forEach(obj -> {
+
+                                Log.d("Vertex", obj.roomId + "," + obj.pictureId + "," + obj.title);
+
+                            });
+                        }
+                );
 
                 repository.addEdifications(edificaciones);
 

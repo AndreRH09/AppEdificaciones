@@ -15,16 +15,16 @@ public interface RoomDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<RoomEntity> roomEntityList);
 
-    @Query("select * from Room")
+    @Query("select * from rooms")
     List<RoomEntity> getAll();
 
-    @Query("select * from Room where roomId=:roomId")
+    @Query("select * from rooms where roomId=:roomId")
     List<RoomEntity> getByRoomId(int roomId);
 
-    @Query("select * from Room")
+    @Query("select * from rooms ")
     List<RoomAndVertex> getRoomWithVertex();
 
-    @Query("select * from Room where roomId=:roomId")
+    @Query("select * from rooms where roomId=:roomId")
     RoomAndVertex getRoomWithVertexByRoomId(int roomId);
 
 //    @Query("select * from rooms inner join vertex on rooms.roomId=vertex.roomId")
