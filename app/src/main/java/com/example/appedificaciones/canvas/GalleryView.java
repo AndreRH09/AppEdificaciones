@@ -107,7 +107,7 @@ public class GalleryView extends View {
     protected void onDraw(@NonNull Canvas canvas) {
         drawRooms(canvas);
         drawDoors(canvas);
-        drawPictures(canvas);
+        //drawPictures(canvas);
     }
 
     private void drawPictures(Canvas canvas) {
