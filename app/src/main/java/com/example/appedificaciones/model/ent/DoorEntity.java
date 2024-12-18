@@ -6,17 +6,15 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "doors")
 
 public class DoorEntity {
-    @PrimaryKey(autoGenerate = true)
-    private int id;         // Identificador de la puerta
+    @PrimaryKey
+    private int doorId;
+    private float x;
+    private float y;
+    private float width;
+    private float angle;
 
-    private float x;       // Coordenada X del centro de la puerta
-    private float y;       // Coordenada Y del centro de la puerta
-    private float width;   // Ancho de la puerta
-    private float angle;     // Ángulo de la puerta (horizontal o vertical)
-
-    // Constructor
-      public DoorEntity(int id, float x, float y, float width, float angle) {
-        this.id = id;
+    public DoorEntity(int doorId,float x, float y, float width, float angle) {
+        this.doorId = doorId;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -24,36 +22,43 @@ public class DoorEntity {
     }
 
      // Métodos getter
-    public int getId() {
-        return id; // Retorna el identificador
+     public int getDoorId() {
+         return doorId;
+     }
+
+    public void setDoorId(int doorId) {
+        this.doorId = doorId;
     }
 
     public float getX() {
-        return x; // Retorna la coordenada X
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
     }
 
     public float getY() {
-        return y; // Retorna la coordenada Y
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
     }
 
     public float getWidth() {
-        return width; // Retorna el ancho de la puerta
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
     }
 
     public float getAngle() {
-        return angle; // Retorna el ángulo de la puerta
+        return angle;
     }
 
-    public void setX(float v) {
-          this.x = v;
-
-    }
-    public void setY(float v) {
-          this.y = v;
-
-    }
-    public void setWidth(float v) {
-          this.width = v;
-
+    public void setAngle(float angle) {
+        this.angle = angle;
     }
 }

@@ -12,6 +12,7 @@
 
     import com.example.appedificaciones.model.dao.EdificationDao;
     import com.example.appedificaciones.model.dao.FavoriteDao;
+    import com.example.appedificaciones.model.dao.RoomDao;
     import com.example.appedificaciones.model.ent.DoorEntity;
     import com.example.appedificaciones.model.ent.EdificationEntity;
     import com.example.appedificaciones.model.ent.FavoriteEdificationEntity;
@@ -20,8 +21,8 @@
     import com.example.appedificaciones.model.ent.VertexEntity;
 
     import com.example.appedificaciones.model.dao.UserDao;
-    //import com.example.appedificaciones.model.dao.RoomDao;
-    //import com.example.appedificaciones.model.dao.VertexDao;
+    import com.example.appedificaciones.model.dao.DoorDao;
+    import com.example.appedificaciones.model.dao.VertexDao;
 
     @Database(version = 12,
             entities = {
@@ -40,9 +41,8 @@
         public abstract UserDao userDao();
         public abstract EdificationDao edificationDao();
         public abstract FavoriteDao favoriteDao();
-        //public abstract PictureDao pictureDao();
-        //public abstract RoomDao roomVertexDao();
-        //public abstract VertexDao vertexDao();
+        public abstract RoomDao roomVertexDao();
+        public abstract VertexDao vertexDao();
 
         private static AppDatabase INSTANCE = null;
     
