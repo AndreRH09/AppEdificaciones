@@ -3,32 +3,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#20232A"
+    >
 
     <EditText
+        android:textColorHint="@android:color/darker_gray"
         android:id="@+id/editTextComentario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Escribe tu comentario aquí"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:textColor="#F4F4EF"
+        />
 
     <RatingBar
         android:id="@+id/ratingBarComentario"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numStars="5"
-        android:rating="0" />
+        android:rating="0"
+        android:progressTint="#efb810"
+        android:secondaryProgressTint="#FFFFFF"
+        android:backgroundTint="#20232A" />
 
     <Button
         android:id="@+id/btnGuardarComentario"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Guardar Comentario"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        style="@style/BotonPersonalizado"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewComentarios"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        />
 </LinearLayout>

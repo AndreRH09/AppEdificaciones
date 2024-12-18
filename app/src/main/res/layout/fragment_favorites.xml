@@ -3,12 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.FavoritesFragment">
+    tools:context=".fragments.FavoritesFragment"
+    android:background="#20232A">
+
+    <!-- Título en la parte superior -->
+
+    <!-- RecyclerView debajo del título -->
+    <TextView
+        android:id="@+id/tituloFavoritos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="50dp"
+        android:text="Lugares Favoritos"
+        android:textColor="#ACBEBE"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFavorites"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="8dp" />
+        android:layout_marginTop="80dp" /> <!-- Ajusta el margen superior para que no se superponga con el título -->
 
 </FrameLayout>

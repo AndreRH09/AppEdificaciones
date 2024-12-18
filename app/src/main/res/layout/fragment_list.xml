@@ -10,6 +10,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:background="@color/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -18,7 +19,7 @@
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_blue_dark"
+        android:background="@color/background"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,8 +30,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:background="@color/white"
-            android:orientation="horizontal">
+            android:background="@color/background"
+            android:orientation="horizontal"
+            >
 
             <ImageView
                 android:id="@+id/imgSearchIcon"
@@ -38,7 +40,8 @@
                 android:layout_height="20dp"
                 android:layout_marginHorizontal="8dp"
                 android:layout_marginVertical="20dp"
-                app:srcCompat="@drawable/search_com" />
+                app:srcCompat="@drawable/search_com"
+                android:tint="@android:color/white"/>
 
             <EditText
                 android:id="@+id/searchInput"
@@ -46,7 +49,10 @@
                 android:layout_height="48dp"
                 android:layout_margin="8dp"
                 android:layout_marginHorizontal="8dp"
-                android:hint="Buscar edificaciones" />
+                android:textColor="#F4F4EF"
+                android:background="@color/background"
+                android:hint="Buscar edificaciones"
+                android:textColorHint="@android:color/darker_gray"/>
 
         </LinearLayout>
 
@@ -59,13 +65,14 @@
         android:id="@+id/linearLayout4"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        android:background="@color/background">
 
         <TextView
             android:id="@+id/textView"
@@ -73,7 +80,8 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="8dp"
             android:text="Categoria"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="#F4F4EF"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/linearLayout5"
@@ -88,7 +96,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="200dp"
                 android:background="@drawable/oval_shape"
-                android:backgroundTint="#90CAF9"
+                android:backgroundTint="#A01D26"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -106,18 +114,28 @@
 
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        android:paddingTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
-        app:layout_constraintVertical_bias="0.0" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/background"
+            android:textColor="#F4F4EF"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:elevation="4dp"
+            android:clipToPadding="false"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

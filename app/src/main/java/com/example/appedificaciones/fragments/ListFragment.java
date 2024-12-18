@@ -64,7 +64,7 @@ public class ListFragment extends Fragment {
         searchInput = view.findViewById(R.id.searchInput);
         spinnerCategory = view.findViewById(R.id.spinnerCategory);
 
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 1));
 
         // Cargar edificaciones desde la base de datos o archivo de texto
         cargarEdificaciones();

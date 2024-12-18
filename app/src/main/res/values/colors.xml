@@ -2,12 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="principal">#800020</color>
+    <color name="principal">#A01D26</color>
     <color name="secondary">#D3D3D3</color>
     <color name="icon">@color/white</color>
-
-    <color name="background">#F5F5F5</color> <!-- Fondo claro -->
-    <color name="textPrimary">#000000</color> <!-- Texto principal en negro -->
-    <color name="textSecondary">#666666</color> <!-- Texto secundario en gris oscuro -->
+    <color name="background">#20232A</color>
+    <color name="textPrimary">#ACBEBE</color>
+    <color name="textSecondary">#F4F4EF</color>
 
 </resources>

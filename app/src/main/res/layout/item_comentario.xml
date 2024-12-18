@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:background="#20232A">
 
     <!-- Foto del usuario -->
     <ImageView
@@ -30,7 +31,8 @@
             android:layout_height="wrap_content"
             android:text="Nombre del Usuario"
             android:textStyle="bold"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#F4F4EF"/>
 
         <!-- Valoración -->
         <RatingBar
@@ -41,7 +43,8 @@
             android:stepSize="1"
             android:isIndicator="true"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:progressTint="#efb810"/>
 
         <!-- Comentario -->
         <TextView
@@ -49,6 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Comentario del usuario"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="#F4F4EF"/>
     </LinearLayout>
 </LinearLayout>

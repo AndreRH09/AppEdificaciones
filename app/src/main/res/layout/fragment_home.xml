@@ -8,11 +8,11 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center"
-    android:background="@color/background">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="@color/background">
 
     <!-- Título de la sección -->
 
@@ -34,7 +34,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/arequipa_description"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:textColor="@color/textSecondary"/>
 
     <!-- Imagen representativa de edificaciones históricas -->
 
@@ -52,9 +53,8 @@
             android:id="@+id/btnVerEdificaciones"
             android:layout_width="221dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/principal"
             android:text="@string/ver_edificaciones"
-            android:textColor="@color/white" />
+            style="@style/BotonPersonalizado" />
 
         <Button
             android:id="@+id/btnEditarPerfil"
@@ -62,7 +62,8 @@
             android:layout_height="wrap_content"
             android:text="Editar perfil"
             android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            style="@style/SecondaryButton"/>
 
     </LinearLayout>
 
