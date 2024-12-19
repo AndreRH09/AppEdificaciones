@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#20232A"
+    android:background="@color/background"
     tools:context=".fragments.RoomFragment">
 
     <ScrollView
@@ -16,7 +16,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp"
-            android:background="#20232A">
+            android:background="@color/background">
 
             <!-- Título de la habitación -->
             <TextView

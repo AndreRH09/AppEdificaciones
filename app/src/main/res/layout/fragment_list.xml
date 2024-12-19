@@ -96,7 +96,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="200dp"
                 android:background="@drawable/oval_shape"
-                android:backgroundTint="#A01D26"
+                android:backgroundTint="#ACBEBE"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"

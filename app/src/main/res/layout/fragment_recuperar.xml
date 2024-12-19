@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.account.RecuperarFragment">
+    tools:context=".fragments.account.RecuperarFragment"
+    android:background="@color/background">
 
     <TextView
         android:id="@+id/textViewRecuperar"
@@ -14,6 +15,7 @@
         android:text="Recuperar Contraseña"
         android:textStyle="bold"
         android:textSize="25sp"
+        android:textColor="#ACBEBE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,6 +29,8 @@
         android:hint="Usuario"
         android:inputType="text"
         android:text=""
+        android:textColorHint="@android:color/darker_gray"
+        android:textColor="#F4F4EF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewRecuperar" />
@@ -38,6 +42,8 @@
         android:layout_marginTop="20dp"
         android:ems="10"
         android:hint="Correo Electrónico"
+        android:textColorHint="@android:color/darker_gray"
+        android:textColor="#F4F4EF"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,6 +57,8 @@
         android:ems="10"
         android:inputType="phone"
         android:hint="Teléfono"
+        android:textColorHint="@android:color/darker_gray"
+        android:textColor="#F4F4EF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtEmailRecuperar" />
