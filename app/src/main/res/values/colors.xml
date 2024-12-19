@@ -5,6 +5,8 @@
     <color name="principal">#ACBEBE</color>
     <color name="secondary">#D3D3D3</color>
     <color name="icon">@color/white</color>
+
+    <color name="progressColor">#ABBDBD</color>
     <color name="background">#20232A</color>
     <color name="textPrimary">#ACBEBE</color>
     <color name="textSecondary">#F4F4EF</color>

@@ -214,11 +214,26 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         tituloEdificacion = getArguments().getString(ARG_TITULO);
 
         btnVerCroquis = view.findViewById(R.id.btnVerCroquis);
+        if ("Basílica de Yanahuara".equals(tituloEdificacion)) {
+            // Habilitar el botón y poner el texto original
+            btnVerCroquis.setEnabled(true);
+            btnVerCroquis.setText("Ver Croquis");
+            btnVerCroquis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0); // Elimina cualquier icono si es necesario
+        } else {
+            // Deshabilitar el botón y mostrar el mensaje "Trabajando en ello"
+            btnVerCroquis.setEnabled(false);
+            btnVerCroquis.setText("Trabajando...");
+
+            // Cambiar el icono del botón
+            Drawable drawableLogo = getResources().getDrawable(R.drawable.logo_trabajando); // Asegúrate de tener este logo en drawable
+            // Redimensionar el drawable para que se ajuste al tamaño del botón
+            int width = 50; // Ancho deseado (ajústalo según tus necesidades)
+            int height = 50; // Alto deseado (ajústalo según tus necesidades)
+            drawableLogo.setBounds(0, 0, width, height); // Redimensiona el icono
+            btnVerCroquis.setCompoundDrawablesWithIntrinsicBounds(drawableLogo, null, null, null); // Coloca el logo en el lado izquierdo
+        }
         btnVerCroquis.setOnClickListener(v -> {
-            CroquisFragment nuevoFragment = new CroquisFragment();
-            Bundle args = new Bundle();
-            args.putString("tituloEdificacion", tituloEdificacion);
-            nuevoFragment.setArguments(args);
+            GalleryFragment nuevoFragment = new GalleryFragment();
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView, nuevoFragment)
                     .addToBackStack(null)
