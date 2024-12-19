@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -222,7 +223,8 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
         } else {
             // Deshabilitar el botón y mostrar el mensaje "Trabajando en ello"
             btnVerCroquis.setEnabled(false);
-            btnVerCroquis.setText("Trabajando...");
+            btnVerCroquis.setText("Croquis en Mantenimiento");
+            btnVerCroquis.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11); // Cambia 14 por el tamaño que desees
 
             // Cambiar el icono del botón
             Drawable drawableLogo = getResources().getDrawable(R.drawable.logo_trabajando); // Asegúrate de tener este logo en drawable
