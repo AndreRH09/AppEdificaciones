@@ -4,45 +4,27 @@ import androidx.room.ForeignKey;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "vertex",
-        foreignKeys = @ForeignKey(entity = RoomEntity.class,
-                                  parentColumns = "roomId", // Nombre de la columna en la tabla padre
-                                  childColumns = "roomId",  // Nombre de la columna en la tabla hijo
-                                  onDelete = ForeignKey.CASCADE)) // Comportamiento en caso de eliminación
+@Entity(tableName = "vertex")
 public class VertexEntity {
-    @PrimaryKey(autoGenerate = true)
-    private int id; // ID del vértice
-
-    private float x; // Coordenada X
-    private float y; // Coordenada Y
+    @PrimaryKey
+    private int vertexId;
     private int roomId;
+    private float x;
+    private float y;
 
-    // Constructor
-    public VertexEntity(int id, int roomId, float x, float y) {
-        this.id = id;
+    public VertexEntity(int vertexId, int roomId, float x, float y) {
+        this.vertexId = vertexId;
         this.roomId = roomId;
         this.x = x;
         this.y = y;
     }
 
-    // Métodos getter
-    public int getId() {
-        return id;
-    }
-    public float getX() {
-        return x;
+    public int getVertexId() {
+        return vertexId;
     }
 
-    public float getY() {
-        return y;
-    }
-
-    public void setX(float v) {
-        this.x = v;
-    }
-
-    public void setY(float v) {
-        this.y = v;
+    public void setVertexId(int vertexId) {
+        this.vertexId = vertexId;
     }
 
     public int getRoomId() {
@@ -51,5 +33,21 @@ public class VertexEntity {
 
     public void setRoomId(int roomId) {
         this.roomId = roomId;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
     }
 }

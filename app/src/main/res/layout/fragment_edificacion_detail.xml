@@ -158,11 +158,11 @@
 
                 <Button
                     android:id="@+id/btnVerCroquis"
-                    android:layout_width="wrap_content"
+                    style="@style/BotonPersonalizado"
+                    android:layout_width="170dp"
                     android:layout_height="wrap_content"
-                    android:text="Ver Croquis"
                     android:layout_marginEnd="16dp"
-                    style="@style/BotonPersonalizado" />
+                    android:text="Ver Croquis" />
 
                 <Button
                     android:id="@+id/btnMostrarComentarios"

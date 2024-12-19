@@ -1,3 +1,7 @@
-1, Room 1
-2, Room 2
-3, Room 3
+6,Calle 1
+1,Jardin Exterior 2
+2,Room 3
+3,Room 4
+4,Room 5
+5,Room 6
+7,Jardin Interior 7

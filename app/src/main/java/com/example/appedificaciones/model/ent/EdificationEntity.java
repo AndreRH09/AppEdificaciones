@@ -22,7 +22,6 @@ public class EdificationEntity {
     public String anio;
 
 
-
     // Constructor vacío necesario para Room
     public EdificationEntity() {
     }
