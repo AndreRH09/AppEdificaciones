@@ -22,6 +22,10 @@ public interface EdificationDao {
     @Query("SELECT * FROM edification")
     List<EdificationEntity> getAllEdifications();
 
+    // Método para obtener todas las categorías únicas de las edificaciones
+    @Query("SELECT DISTINCT categoria FROM edification")
+    List<String> getAllUniqueCategories();
+
     // Método para obtener una edificación por su ID
     @Query("SELECT * FROM edification WHERE id = :id")
     EdificationEntity getEdificationById(int id);

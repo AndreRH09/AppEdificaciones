@@ -106,21 +106,30 @@ public class ListFragment extends Fragment {
     }
 
     private void configurarSpinnerCategorias() {
-        Log.d("configurarSpinnerCategorias lista", edificaciones.toString());
-        List<String> categorias = EdificationEntity.getCategoriesInList(edificaciones);
-        categorias.add(0, "Todas");
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categorias);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategory.setAdapter(spinnerAdapter);
+        EdificationRepository repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
 
-        spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                aplicarFiltro();
-            }
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Obtener las categorías únicas desde el repositorio
+            List<String> categorias = repository.getAllUniqueCategories();
+            categorias.add(0, "Todas");
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            // Actualizar la vista en el hilo principal
+            new Handler(Looper.getMainLooper()).post(() -> {
+                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categorias);
+                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCategory.setAdapter(spinnerAdapter);
+
+                // Configurar el listener del spinner
+                spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        aplicarFiltro();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {}
+                });
+            });
         });
     }
 

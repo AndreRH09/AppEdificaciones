@@ -70,6 +70,12 @@ public class EdificationRepository {
         return appDatabase.edificationDao().getAllEdifications();
     }
 
+    // Método para obtener todas las categorías únicas de las edificaciones
+    public List<String> getAllUniqueCategories() {
+        return appDatabase.edificationDao().getAllUniqueCategories();
+    }
+
+
     public void addEdifications (List<EdificationEntity> edifications) {
         appDatabase.edificationDao().insert(edifications);
     }
