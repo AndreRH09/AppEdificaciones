@@ -545,7 +545,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                 EdificationRepository repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
                 repository.isEdificationFavorite(userId, edificationId, isFavorite -> {
                     if (isFavorite) {
-                        imgAddFavoriteEdification.setColorFilter(Color.RED); // Favorito
+                        imgAddFavoriteEdification.setColorFilter(Color.parseColor("#ACBEBE")); // Favorito
                     } else {
                         imgAddFavoriteEdification.setColorFilter(Color.BLACK); // No favorito
                     }
@@ -561,7 +561,7 @@ public class EdificacionDetailFragment extends Fragment implements OnMapReadyCal
                         } else {
                             // Agregar a favoritos
                             repository.addFavoriteEdification(userId, edificationId);
-                            imgAddFavoriteEdification.setColorFilter(Color.RED);
+                            imgAddFavoriteEdification.setColorFilter(Color.parseColor("#ACBEBE"));
                         }
                     });
                 });
