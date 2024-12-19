@@ -71,11 +71,9 @@ public class PictureFragment extends Fragment implements PictureFragmentListener
         super.onViewCreated(view, savedInstanceState);
         repository = new EdificationRepository(AppDatabase.getInstance(requireContext()));
 
-        ImageButton btnCerrar = view.findViewById(R.id.btnCerrar);
         txtTitle = view.findViewById(R.id.txtTitle);
         txtDescription = view.findViewById(R.id.txtDescription);
         imageView = view.findViewById(R.id.imageView);
-        Button btnShowComments = view.findViewById(R.id.btnShowComments); // Botón para mostrar los comentarios
 
 
 

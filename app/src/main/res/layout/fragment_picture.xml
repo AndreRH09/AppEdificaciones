@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffecd8"
+    android:background="@color/background"
     tools:context=".fragments.PictureFragment">
 
     <!-- Título centrado en la parte superior -->
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Galería de Arte"
-        android:textColor="#000000"
+        android:textColor="#ffffff"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -27,7 +27,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        android:background="@drawable/image_frame"
+        android:background="#ACBEBE"
         app:layout_constraintBottom_toTopOf="@id/txtDescription"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,7 +52,7 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:backgroundTint="#0000ff"
+        android:backgroundTint="@color/background"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -95,28 +95,7 @@
         app:layout_constraintTop_toBottomOf="@id/frameImageContainer" />
 
     <!-- Botón de cerrar en la esquina superior derecha -->
-    <ImageButton
-        android:id="@+id/btnCerrar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="#E6DCF6"
-        android:src="@drawable/baseline_close_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
 
     <!-- Botón para mostrar comentarios -->
-    <Button
-        android:id="@+id/btnShowComments"
-        android:layout_width="213dp"
-        android:layout_height="57dp"
-        android:text="Mostrar comentarios"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtDescription"
-        app:layout_constraintVertical_bias="0.194" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

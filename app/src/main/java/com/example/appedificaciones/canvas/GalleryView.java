@@ -91,6 +91,8 @@ public class GalleryView extends View {
                 if (clicked) {
                     Log.d("TAG", key.label);
                     eventViewModel.setRoomSelected(key.roomId);
+                    // También notificar la acción de cambiar al fragmento de imágenes
+                    eventViewModel.setPictureSelected(key.roomId); // Suponiendo que el ID de la sala es relevante para las imágenes
                 }
             }
 
@@ -105,7 +107,7 @@ public class GalleryView extends View {
     protected void onDraw(@NonNull Canvas canvas) {
         drawRooms(canvas);
         drawDoors(canvas);
-        drawPictures(canvas);
+        //drawPictures(canvas);
     }
 
     private void drawPictures(Canvas canvas) {

@@ -19,10 +19,10 @@ public class EventViewModel extends ViewModel {
         return closeFragment;
     }
 
-    public void setRoomSelected(int roomId){
+    public void setRoomSelected(Integer roomId){
         roomSelected.setValue(roomId);
     }
-    public void setPictureSelected(int roomId){
+    public void setPictureSelected(Integer roomId){
         pictureSelected.setValue(roomId);
     }
     public void setCloseFragment(int code){

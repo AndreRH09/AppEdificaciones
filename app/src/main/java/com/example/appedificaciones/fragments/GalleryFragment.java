@@ -67,8 +67,26 @@ public class GalleryFragment extends Fragment implements GalleryFragmentListener
         eventViewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         galleryview.setEventViewModel(eventViewModel);
 
+        // Suscribirse al evento de navegación a imágenes
+        eventViewModel.onPictureSelected().removeObservers(getViewLifecycleOwner());
+        eventViewModel.onPictureSelected().observe(getViewLifecycleOwner(), roomId -> {
+            if (roomId != null) {
+                eventViewModel.setRoomSelected(null);
+                eventViewModel.setPictureSelected(null);
+                navigateToPictureFragment(roomId);
+            }
+        });
+
         loadRoomsVertexes();
 
+    }
+    private void navigateToPictureFragment(int roomId) {
+        PictureFragment fragment = PictureFragment.newInstance(roomId); // Asegúrate de implementar esta instancia
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainerView, fragment) // Cambia 'fragment_container' por el ID de tu contenedor
+                .addToBackStack(null)
+                .commit();
     }
 
     private void loadPictures() {
